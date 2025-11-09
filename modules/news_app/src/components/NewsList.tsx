@@ -1,0 +1,108 @@
+import { Component } from 'valdi_core/src/Component';
+import { Label, View, ImageView, ScrollView } from 'valdi_tsx/src/NativeTemplateElements';
+import { Style } from 'valdi_core/src/Style';
+import { systemFont, systemBoldFont } from 'valdi_core/src/SystemFont';
+import { NewsArticle } from '../services/NewsAPIService';
+
+interface ViewModel {
+  articles: NewsArticle[];
+  onArticleTap: (article: NewsArticle) => void;
+  onRefresh: () => void;
+}
+
+export class NewsList extends Component<ViewModel> {
+  onRender(): void {
+    <scroll style={styles.container}>
+      {this.viewModel.articles.length === 0 ? (
+        <view style={styles.emptyContainer}>
+          <label style={styles.emptyText} value="No articles found" />
+          <view style={styles.refreshButton} onTap={this.viewModel.onRefresh}>
+            <label style={styles.refreshButtonText} value="Tap to Refresh" />
+          </view>
+        </view>
+      ) : (
+        this.viewModel.articles.map((article, index) => (
+          <view 
+            key={`article-${index}`} 
+            style={styles.articleCard}
+            onTap={() => this.viewModel.onArticleTap(article)}
+          >
+            {article.urlToImage && (
+              <image 
+                src={article.urlToImage} 
+                style={styles.articleImage}
+              />
+            )}
+            <view style={styles.articleContent}>
+              <label style={styles.articleTitle} value={article.title} />
+              {article.description && (
+                <label style={styles.articleDescription} value={article.description} />
+              )}
+              <label style={styles.articleSource} value={article.source.name} />
+            </view>
+          </view>
+        ))
+      )}
+    </scroll>;
+  }
+}
+
+const styles = {
+  container: new Style<ScrollView>({
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f5f5f5',
+  }),
+  emptyContainer: new Style<View>({
+    padding: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }),
+  emptyText: new Style<Label>({
+    font: systemFont(18),
+    color: '#999999',
+    marginBottom: 20,
+  }),
+  refreshButton: new Style<View>({
+    backgroundColor: '#007AFF',
+    padding: 12,
+    borderRadius: 8,
+  }),
+  refreshButtonText: new Style<Label>({
+    font: systemBoldFont(16),
+    color: 'white',
+  }),
+  articleCard: new Style<View>({
+    backgroundColor: 'white',
+    marginLeft: 16,
+    marginRight: 16,
+    marginTop: 8,
+    marginBottom: 8,
+    borderRadius: 12,
+    boxShadow: '0 2 4 rgba(0, 0, 0, 0.1)',
+  }),
+  articleImage: new Style<ImageView>({
+    width: '100%',
+    height: 200,
+    objectFit: 'cover',
+  }),
+  articleContent: new Style<View>({
+    padding: 16,
+  }),
+  articleTitle: new Style<Label>({
+    font: systemBoldFont(18),
+    color: '#1a1a1a',
+    marginBottom: 8,
+    numberOfLines: 3,
+  }),
+  articleDescription: new Style<Label>({
+    font: systemFont(14),
+    color: '#666666',
+    marginBottom: 8,
+    numberOfLines: 3,
+  }),
+  articleSource: new Style<Label>({
+    font: systemFont(12),
+    color: '#999999',
+  }),
+};

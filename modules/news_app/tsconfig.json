@@ -21,6 +21,9 @@
             "valdi_core/*": [
                 "../../bazel-news_app/external/valdi/src/valdi_modules/src/valdi/valdi_core/*"
             ],
+            "valdi_http/*": [
+                "../../bazel-news_app/external/valdi/src/valdi_modules/src/valdi/valdi_http/*"
+            ],
             "tslib": [
                 "../../bazel-news_app/external/valdi/src/valdi_modules/src/valdi/valdi_core/src/tslib"
             ]

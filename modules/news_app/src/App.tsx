@@ -1,13 +1,14 @@
 import { StatefulComponent } from 'valdi_core/src/Component';
-import { ImageView, Label, View } from 'valdi_tsx/src/NativeTemplateElements';
+import { Label, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { Style } from 'valdi_core/src/Style';
-import { systemBoldFont, systemFont } from 'valdi_core/src/SystemFont';
-import { AttributedText } from 'valdi_tsx/src/AttributedText';
-import { AttributedTextBuilder } from 'valdi_core/src/utils/AttributedTextBuilder';
-import { Device } from 'valdi_core/src/Device';
-import { getDaemonClientManager } from 'valdi_core/src/debugging/DaemonClientManagerResolver';
-import { IDaemonClientManagerListener } from 'valdi_core/src/debugging/DaemonClientManager';
-import res from '../res';
+import { systemBoldFont } from 'valdi_core/src/SystemFont';
+import { NewsAPIService, NewsArticle } from './services/NewsAPIService';
+import { APIKeyConfig } from './components/APIKeyConfig';
+import { NewsList } from './components/NewsList';
+import { ArticleDetail } from './components/ArticleDetail';
+
+// Hardcoded API key - replace with your NewsAPI.org API key
+const NEWSAPI_KEY = '37bd379b7c7e4280ad84f7e8d176e870';
 
 /**
  * @ViewModel
@@ -22,112 +23,165 @@ export interface AppViewModel {}
 export interface AppComponentContext {}
 
 interface State {
-  hotReloaderConnected: boolean;
+  apiKey: string | null;
+  articles: NewsArticle[];
+  selectedArticle: NewsArticle | null;
+  isLoading: boolean;
+  error: string | null;
 }
 
 /**
  * @Component
  * @ExportModel
  */
-export class App extends StatefulComponent<AppViewModel, AppComponentContext> implements IDaemonClientManagerListener {
-  state: State = { hotReloaderConnected: false };
+export class App extends StatefulComponent<AppViewModel, AppComponentContext> {
+  private newsService: NewsAPIService;
+
+  state: State = {
+    apiKey: NEWSAPI_KEY,
+    articles: [],
+    selectedArticle: null,
+    isLoading: false,
+    error: null,
+  };
+
+  constructor(renderer: any, viewModel: AppViewModel, context: AppComponentContext) {
+    super(renderer, viewModel, context);
+    this.newsService = new NewsAPIService(NEWSAPI_KEY);
+  }
 
   onCreate(): void {
-    console.log('On App create!');
-    getDaemonClientManager().addListener(this);
+    console.log('News App starting...');
+    this.loadNews();
   }
 
-  onDestroy(): void {
-    console.log('On App destroy!');
-    getDaemonClientManager().removeListener(this);
+  private async loadNews() {
+    this.setState({ isLoading: true, error: null });
+    try {
+      const articles = await this.newsService.getTopHeadlines('us');
+      this.setState({ articles, isLoading: false });
+    } catch (error) {
+      console.error('Failed to load news:', error);
+      this.setState({ 
+        error: 'Failed to load news. Please check your API key and connection.' + error,
+        isLoading: false 
+      });
+    }
   }
 
-  onAvailabilityChanged(available: boolean): void {
-    this.setState({ hotReloaderConnected: available });
-  }
+  private handleArticleTap = (article: NewsArticle) => {
+    this.setState({ selectedArticle: article });
+  };
+
+  private handleBack = () => {
+    this.setState({ selectedArticle: null });
+  };
+
+  private handleRefresh = async () => {
+    await this.loadNews();
+  };
 
   onRender(): void {
-    console.log('On App render!');
-    <view style={styles.main}>
-      <image style={styles.logo} src={res.valdi} />
-      <layout padding={20}>
-        <label style={styles.title} value={`Welcome to Valdi!`} />
-      </layout>
-      <label style={styles.subtitle} value={this.renderLabel()} />
+    // Show article detail view
+    if (this.state.selectedArticle) {
+      <view style={styles.container}>
+        <ArticleDetail 
+          article={this.state.selectedArticle}
+          onBack={this.handleBack}
+        />
+      </view>;
+      return;
+    }
+
+    // Show loading state
+    if (this.state.isLoading) {
+      <view style={styles.container}>
+        <view style={styles.header}>
+          <label style={styles.headerTitle} value="News App" />
+        </view>
+        <view style={styles.loadingContainer}>
+          <label style={styles.loadingText} value="Loading news..." />
+        </view>
+      </view>;
+      return;
+    }
+
+    // Show error state
+    if (this.state.error) {
+      <view style={styles.container}>
+        <view style={styles.header}>
+          <label style={styles.headerTitle} value="News App" />
+        </view>
+        <view style={styles.errorContainer}>
+          <label style={styles.errorText} value={this.state.error} />
+          <view style={styles.retryButton} onTap={this.handleRefresh}>
+            <label style={styles.retryButtonText} value="Retry" />
+          </view>
+        </view>
+      </view>;
+      return;
+    }
+
+    // Show news list
+    <view style={styles.container}>
+      <view style={styles.header}>
+        <label style={styles.headerTitle} value="News App" />
+      </view>
+      <NewsList 
+        articles={this.state.articles}
+        onArticleTap={this.handleArticleTap}
+        onRefresh={this.handleRefresh}
+      />
     </view>;
-  }
-
-  private renderLabel(): AttributedText {
-    const textBuilder = new AttributedTextBuilder();
-
-    textBuilder.appendText('This is currently running on ');
-    textBuilder.appendStyled({
-      content: this.getPlatformString(),
-      attributes: {
-        color: 'red',
-        font: systemBoldFont(20),
-      },
-    });
-
-    textBuilder.appendText('\nHot reloader ');
-    if (this.state.hotReloaderConnected) {
-      textBuilder.appendStyled({
-        content: 'connected',
-        attributes: {
-          color: 'green',
-          font: systemBoldFont(20),
-        },
-      });
-    } else {
-      textBuilder.appendStyled({
-        content: 'disconnected',
-        attributes: {
-          color: 'red',
-          font: systemBoldFont(20),
-        },
-      });
-    }
-
-    return textBuilder.build();
-  }
-
-  private getPlatformString(): string {
-    if (Device.isDesktop()) {
-      return 'Desktop';
-    } else if (Device.isIOS()) {
-      return 'iOS';
-    } else if (Device.isAndroid()) {
-      return 'Android';
-    } else {
-      return 'Unknown';
-    }
   }
 }
 
 const styles = {
-  main: new Style<View>({
+  container: new Style<View>({
+    width: '100%',
+    height: '100%',
     backgroundColor: 'white',
+  }),
+  header: new Style<View>({
+    padding: 16,
+    backgroundColor: '#007AFF',
+    alignItems: 'center',
+  }),
+  headerTitle: new Style<Label>({
+    font: systemBoldFont(20),
+    color: 'white',
+  }),
+  loadingContainer: new Style<View>({
+    width: '100%',
+    height: '100%',
     justifyContent: 'center',
+    alignItems: 'center',
   }),
-  logo: new Style<ImageView>({
-    width: 80,
-    height: 80,
-    alignSelf: 'center',
-    borderRadius: 16,
-    boxShadow: '0 0 3 rgba(0, 0, 0, 0.15)',
+  loadingText: new Style<Label>({
+    font: systemBoldFont(16),
+    color: '#666666',
   }),
-  title: new Style<Label>({
-    color: 'black',
-    font: systemBoldFont(24),
-    accessibilityCategory: 'header',
-    alignSelf: 'center',
+  errorContainer: new Style<View>({
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   }),
-
-  subtitle: new Style<Label>({
-    alignSelf: 'center',
-    color: 'black',
-    font: systemFont(20),
-    numberOfLines: 0,
+  errorText: new Style<Label>({
+    font: systemBoldFont(16),
+    color: '#ff3b30',
     textAlign: 'center',
+    marginBottom: 20,
+    numberOfLines: 0,
+  }),
+  retryButton: new Style<View>({
+    backgroundColor: '#007AFF',
+    padding: 12,
+    borderRadius: 8,
+  }),
+  retryButtonText: new Style<Label>({
+    font: systemBoldFont(16),
+    color: 'white',
   }),
 };
