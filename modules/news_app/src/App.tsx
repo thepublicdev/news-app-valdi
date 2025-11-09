@@ -6,6 +6,7 @@ import { NewsAPIService, NewsArticle } from './services/NewsAPIService';
 import { APIKeyConfig } from './components/APIKeyConfig';
 import { NewsList } from './components/NewsList';
 import { ArticleDetail } from './components/ArticleDetail';
+import { SearchNews } from './components/SearchNews';
 
 // Hardcoded API key - replace with your NewsAPI.org API key
 const NEWSAPI_KEY = '37bd379b7c7e4280ad84f7e8d176e870';
@@ -29,6 +30,7 @@ interface State {
   selectedCategory: string;
   isLoading: boolean;
   error: string | null;
+  currentView: 'list' | 'search' | 'detail';
 }
 
 /**
@@ -45,6 +47,7 @@ export class App extends StatefulComponent<AppViewModel, AppComponentContext> {
     selectedCategory: 'general',
     isLoading: false,
     error: null,
+    currentView: 'list',
   };
 
   constructor(renderer: any, viewModel: AppViewModel, context: AppComponentContext) {
@@ -78,24 +81,54 @@ export class App extends StatefulComponent<AppViewModel, AppComponentContext> {
   };
 
   private handleArticleTap = (article: NewsArticle) => {
-    this.setState({ selectedArticle: article });
+    this.setState({ selectedArticle: article, currentView: 'detail' });
   };
 
   private handleBack = () => {
-    this.setState({ selectedArticle: null });
+    this.setState({ selectedArticle: null, currentView: 'list' });
+  };
+
+  private handleBackFromSearch = () => {
+    this.setState({ currentView: 'list' });
   };
 
   private handleRefresh = async () => {
     await this.loadNews();
   };
 
+  private handleSearchTap = () => {
+    this.setState({ currentView: 'search' });
+  };
+
+  private handleSearch = async (query: string): Promise<NewsArticle[]> => {
+    try {
+      const articles = await this.newsService.searchNews(query);
+      return articles;
+    } catch (error) {
+      console.error('Failed to search news:', error);
+      return [];
+    }
+  };
+
   onRender(): void {
     // Show article detail view
-    if (this.state.selectedArticle) {
+    if (this.state.currentView === 'detail' && this.state.selectedArticle) {
       <view style={styles.container}>
         <ArticleDetail 
           article={this.state.selectedArticle}
           onBack={this.handleBack}
+        />
+      </view>;
+      return;
+    }
+
+    // Show search view
+    if (this.state.currentView === 'search') {
+      <view style={styles.container}>
+        <SearchNews
+          onArticleTap={this.handleArticleTap}
+          onSearch={this.handleSearch}
+          onBack={this.handleBackFromSearch}
         />
       </view>;
       return;
@@ -141,6 +174,7 @@ export class App extends StatefulComponent<AppViewModel, AppComponentContext> {
         onArticleTap={this.handleArticleTap}
         onCategoryChange={this.handleCategoryChange}
         onRefresh={this.handleRefresh}
+        onSearchTap={this.handleSearchTap}
       />
     </view>;
   }

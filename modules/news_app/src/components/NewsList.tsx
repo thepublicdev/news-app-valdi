@@ -10,6 +10,7 @@ interface ViewModel {
   onArticleTap: (article: NewsArticle) => void;
   onCategoryChange: (category: string) => void;
   onRefresh: () => void;
+  onSearchTap: () => void;
 }
 
 const CATEGORIES = [
@@ -25,9 +26,10 @@ const CATEGORIES = [
 export class NewsList extends Component<ViewModel> {
   onRender(): void {
     <view style={styles.container}>
-      <scroll style={styles.categoryScroll} horizontal={true}>
-        <view style={styles.categoryContainer}>
-          {CATEGORIES.map((category) => (
+      <view style={styles.categoryHeader}>
+        <scroll style={styles.categoryScroll} horizontal={true}>
+          <view style={styles.categoryContainer}>
+            {CATEGORIES.map((category) => (
             <view
               key={category.id}
               style={
@@ -47,8 +49,12 @@ export class NewsList extends Component<ViewModel> {
               />
             </view>
           ))}
+          </view>
+        </scroll>
+        <view style={styles.searchIconButton} onTap={this.viewModel.onSearchTap}>
+          <label style={styles.searchIcon} value="🔍" />
         </view>
-      </scroll>
+      </view>
       <scroll style={styles.articlesScroll}>
         {this.viewModel.articles.length === 0 ? (
           <view style={styles.emptyContainer}>
@@ -92,9 +98,24 @@ const styles = {
     backgroundColor: '#f5f5f5',
     flexDirection: 'column',
   }),
-  categoryScroll: new Style<ScrollView>({
+  categoryHeader: new Style<View>({
     width: '100%',
     backgroundColor: 'white',
+    flexDirection: 'row',
+    alignItems: 'center',
+  }),
+  categoryScroll: new Style<ScrollView>({
+    width: '85%',
+    backgroundColor: 'white',
+  }),
+  searchIconButton: new Style<View>({
+    width: '15%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 12,
+  }),
+  searchIcon: new Style<Label>({
+    font: systemFont(20),
   }),
   categoryContainer: new Style<View>({
     flexDirection: 'row',
