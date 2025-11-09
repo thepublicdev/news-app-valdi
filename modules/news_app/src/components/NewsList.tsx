@@ -6,22 +6,59 @@ import { NewsArticle } from '../services/NewsAPIService';
 
 interface ViewModel {
   articles: NewsArticle[];
+  selectedCategory: string;
   onArticleTap: (article: NewsArticle) => void;
+  onCategoryChange: (category: string) => void;
   onRefresh: () => void;
 }
 
+const CATEGORIES = [
+  { id: 'general', label: 'General' },
+  { id: 'business', label: 'Business' },
+  { id: 'technology', label: 'Technology' },
+  { id: 'entertainment', label: 'Entertainment' },
+  { id: 'sports', label: 'Sports' },
+  { id: 'science', label: 'Science' },
+  { id: 'health', label: 'Health' },
+];
+
 export class NewsList extends Component<ViewModel> {
   onRender(): void {
-    <scroll style={styles.container}>
-      {this.viewModel.articles.length === 0 ? (
-        <view style={styles.emptyContainer}>
-          <label style={styles.emptyText} value="No articles found" />
-          <view style={styles.refreshButton} onTap={this.viewModel.onRefresh}>
-            <label style={styles.refreshButtonText} value="Tap to Refresh" />
-          </view>
+    <view style={styles.container}>
+      <scroll style={styles.categoryScroll} horizontal={true}>
+        <view style={styles.categoryContainer}>
+          {CATEGORIES.map((category) => (
+            <view
+              key={category.id}
+              style={
+                this.viewModel.selectedCategory === category.id
+                  ? styles.categoryPillActive
+                  : styles.categoryPill
+              }
+              onTap={() => this.viewModel.onCategoryChange(category.id)}
+            >
+              <label
+                style={
+                  this.viewModel.selectedCategory === category.id
+                    ? styles.categoryTextActive
+                    : styles.categoryText
+                }
+                value={category.label}
+              />
+            </view>
+          ))}
         </view>
-      ) : (
-        this.viewModel.articles.map((article, index) => (
+      </scroll>
+      <scroll style={styles.articlesScroll}>
+        {this.viewModel.articles.length === 0 ? (
+          <view style={styles.emptyContainer}>
+            <label style={styles.emptyText} value="No articles found" />
+            <view style={styles.refreshButton} onTap={this.viewModel.onRefresh}>
+              <label style={styles.refreshButtonText} value="Tap to Refresh" />
+            </view>
+          </view>
+        ) : (
+          this.viewModel.articles.map((article, index) => (
           <view 
             key={`article-${index}`} 
             style={styles.articleCard}
@@ -43,12 +80,53 @@ export class NewsList extends Component<ViewModel> {
           </view>
         ))
       )}
-    </scroll>;
+      </scroll>
+    </view>;
   }
 }
 
 const styles = {
-  container: new Style<ScrollView>({
+  container: new Style<View>({
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#f5f5f5',
+    flexDirection: 'column',
+  }),
+  categoryScroll: new Style<ScrollView>({
+    width: '100%',
+    backgroundColor: 'white',
+  }),
+  categoryContainer: new Style<View>({
+    flexDirection: 'row',
+    padding: 12,
+  }),
+  categoryPill: new Style<View>({
+    backgroundColor: '#f0f0f0',
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingLeft: 16,
+    paddingRight: 16,
+    borderRadius: 20,
+    marginRight: 8,
+  }),
+  categoryPillActive: new Style<View>({
+    backgroundColor: '#007AFF',
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingLeft: 16,
+    paddingRight: 16,
+    borderRadius: 20,
+    marginRight: 8,
+  }),
+  categoryText: new Style<Label>({
+    font: systemFont(14),
+    color: '#333333',
+  }),
+  categoryTextActive: new Style<Label>({
+    font: systemBoldFont(14),
+    color: 'white',
+  }),
+  articlesScroll: new Style<ScrollView>({
     width: '100%',
     height: '100%',
     backgroundColor: '#f5f5f5',

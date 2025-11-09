@@ -26,6 +26,7 @@ interface State {
   apiKey: string | null;
   articles: NewsArticle[];
   selectedArticle: NewsArticle | null;
+  selectedCategory: string;
   isLoading: boolean;
   error: string | null;
 }
@@ -41,6 +42,7 @@ export class App extends StatefulComponent<AppViewModel, AppComponentContext> {
     apiKey: NEWSAPI_KEY,
     articles: [],
     selectedArticle: null,
+    selectedCategory: 'general',
     isLoading: false,
     error: null,
   };
@@ -55,10 +57,11 @@ export class App extends StatefulComponent<AppViewModel, AppComponentContext> {
     this.loadNews();
   }
 
-  private async loadNews() {
+  private async loadNews(category?: string) {
+    const selectedCategory = category || this.state.selectedCategory;
     this.setState({ isLoading: true, error: null });
     try {
-      const articles = await this.newsService.getTopHeadlines('us');
+      const articles = await this.newsService.getTopHeadlines('us', selectedCategory);
       this.setState({ articles, isLoading: false });
     } catch (error) {
       console.error('Failed to load news:', error);
@@ -68,6 +71,11 @@ export class App extends StatefulComponent<AppViewModel, AppComponentContext> {
       });
     }
   }
+
+  private handleCategoryChange = async (category: string) => {
+    this.setState({ selectedCategory: category });
+    await this.loadNews(category);
+  };
 
   private handleArticleTap = (article: NewsArticle) => {
     this.setState({ selectedArticle: article });
@@ -129,7 +137,9 @@ export class App extends StatefulComponent<AppViewModel, AppComponentContext> {
       </view>
       <NewsList 
         articles={this.state.articles}
+        selectedCategory={this.state.selectedCategory}
         onArticleTap={this.handleArticleTap}
+        onCategoryChange={this.handleCategoryChange}
         onRefresh={this.handleRefresh}
       />
     </view>;
