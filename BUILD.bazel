@@ -1,0 +1,19 @@
+load("@valdi//bzl/valdi:valdi_application.bzl", "valdi_application")
+load("@valdi//bzl/valdi:valdi_exported_library.bzl", "valdi_exported_library")
+
+valdi_application(
+    name = "news_app_app",
+    ios_bundle_id = "com.website.news_app",
+    ios_families = ["iphone"],
+    root_component_path = "App@news_app/src/App",
+    title = "news_app",
+    version = "1.0.0",
+    deps = ["//modules/news_app"],
+)
+
+valdi_exported_library(
+    name = "news_app_export",
+    ios_bundle_id = "com.website.news_app.lib",
+    ios_bundle_name = "NewsApp",
+    deps = ["//modules/news_app"],
+)
