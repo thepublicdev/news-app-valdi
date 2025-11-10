@@ -117,7 +117,6 @@ const styles = {
     height: '100%',
     backgroundColor: '#007AFF',
     flexDirection: 'column',
-    marginTop: 50,
   }),
   header: new Style<View>({
     padding: 16,

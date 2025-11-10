@@ -31,6 +31,13 @@ export class App extends Component<AppViewModel, AppComponentContext> {
   public static newsService: NewsAPIService = new NewsAPIService(NEWSAPI_KEY);
   private navigationController?: NavigationController;
 
+  onCreate(): void {
+    // Push the initial page after a small delay to ensure NavigationController is ready
+    setTimeout(() => {
+      this.navigationController?.push(NewsListPage, {}, {});
+    }, 0);
+  }
+
   onRender(): void {
     <NavigationRoot>
       {$slot((navigationController: NavigationController) => {
@@ -39,7 +46,6 @@ export class App extends Component<AppViewModel, AppComponentContext> {
           <view style={styles.header}>
             <label style={styles.headerTitle} value="News App" />
           </view>
-          <NewsListPage />
         </view>;
       })}
     </NavigationRoot>;
@@ -51,7 +57,6 @@ const styles = {
     width: '100%',
     height: '100%',
     backgroundColor: '#007AFF',
-    marginTop: 50,
     flexDirection: 'column',
   }),
   header: new Style<View>({

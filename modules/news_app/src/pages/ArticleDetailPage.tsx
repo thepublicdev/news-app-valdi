@@ -86,7 +86,6 @@ const styles = {
   container: new Style<View>({
     width: "100%",
     height: "100%",
-    marginTop: 50,
     backgroundColor: "white",
   }),
   header: new Style<View>({
