@@ -184,6 +184,7 @@ const styles = {
     width: '100%',
     height: 200,
     objectFit: 'cover',
+    borderRadius: 12,
   }),
   articleContent: new Style<View>({
     padding: 16,

@@ -29,7 +29,7 @@ export class NewsAPIService {
     this.httpClient = new HTTPClient(this.baseURL);
   }
 
-  async getTopHeadlines(country: string = 'us', category?: string): Promise<NewsArticle[]> {
+  async getTopHeadlines(country: string = 'ke', category?: string): Promise<NewsArticle[]> {
     try {
       let path = `/top-headlines?country=${country}&apiKey=${this.apiKey}`;
       if (category) {
