@@ -38,46 +38,43 @@ export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {
     const article = this.viewModel.article;
 
     <view style={styles.container}>
-      <scroll>
-        <view style={styles.header} onTap={this.handleBack}>
-          <label style={styles.backButton} value="← Back" />
+      <view style={styles.header} onTap={this.handleBack}>
+        <label style={styles.backButton} value="← Back" />
+      </view>
+
+      {article.urlToImage && (
+        <image src={article.urlToImage} style={styles.image} />
+      )}
+
+      <view style={styles.content}>
+        <label style={styles.title} value={article.title} />
+
+        <view style={styles.meta}>
+          <label style={styles.source} value={article.source.name} />
+          {article.author && (
+            <label style={styles.author} value={`By ${article.author}`} />
+          )}
+          <label
+            style={styles.date}
+            value={new Date(article.publishedAt).toDateString()}
+          />
         </view>
 
-        {article.urlToImage && (
-          <image src={article.urlToImage} style={styles.image} />
+        {article.description && (
+          <label style={styles.description} value={article.description} />
         )}
 
-        <view style={styles.content}>
-          <label style={styles.title} value={article.title} />
+        {article.content && (
+          <label style={styles.contentText} value={article.content} />
+        )}
 
-          <view style={styles.meta}>
-            <label style={styles.source} value={article.source.name} />
-            {article.author && (
-              <label style={styles.author} value={`By ${article.author}`} />
-            )}
-            <label
-              style={styles.date}
-              value={new Date(article.publishedAt).toLocaleDateString()}
-            />
-          </view>
-
-          {article.description && (
-            <label style={styles.description} value={article.description} />
-          )}
-
-          {article.content && (
-            <label style={styles.contentText} value={article.content} />
-          )}
-
-          <view
-            style={styles.readMoreButton}
-            onTap={() => this.openURL(article.url)}
-          >
-            <label style={styles.readMoreText} value="Read Full Article" />
-          </view>
+        <view
+          style={styles.readMoreButton}
+          onTap={() => this.openURL(article.url)}
+        >
+          <label style={styles.readMoreText} value="Read Full Article" />
         </view>
-      </scroll>
-      ;
+      </view>
     </view>;
   }
 }
