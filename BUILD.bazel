@@ -6,8 +6,14 @@ valdi_application(
     ios_bundle_id = "com.website.news_app",
     ios_families = ["iphone"],
     root_component_path = "App@news_app/src/App",
-    title = "news_app",
+    title = "News App",
     version = "1.0.0",
+    
+    # Add your app icon here
+    android_app_icon_name = "app_icon",
+    android_resource_files = glob(["app_assets/android/**"]),
+    ios_app_icons = glob(["app_assets/Assets.xcassets/**"]),
+
     deps = ["//modules/news_app"],
 )
 
