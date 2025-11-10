@@ -18,5 +18,6 @@ valdi_module(
         "@valdi//src/valdi_modules/src/valdi/valdi_core",
         "@valdi//src/valdi_modules/src/valdi/valdi_tsx",
         "@valdi//src/valdi_modules/src/valdi/valdi_http",
+        "@valdi//src/valdi_modules/src/valdi/valdi_navigation",
     ],
 )

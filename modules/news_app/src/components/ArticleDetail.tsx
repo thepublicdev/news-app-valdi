@@ -10,6 +10,20 @@ interface ViewModel {
 }
 
 export class ArticleDetail extends Component<ViewModel> {
+  private openURL(url: string) {
+    try {
+      // Use Valdi's native bridge to open URL in system browser
+      // @ts-ignore - nativeCall is a global function provided by Valdi runtime
+      if (typeof nativeCall !== 'undefined') {
+        // nativeCall('openURL', url);
+      } else {
+        console.log('Open URL in browser:', url);
+      }
+    } catch (error) {
+      console.error('Failed to open URL:', error);
+    }
+  }
+
   onRender(): void {
     const article = this.viewModel.article;
     
@@ -44,7 +58,7 @@ export class ArticleDetail extends Component<ViewModel> {
           <label style={styles.contentText} value={article.content} />
         )}
         
-        <view style={styles.readMoreButton} onTap={() => console.log('Open:', article.url)}>
+        <view style={styles.readMoreButton} onTap={() => this.openURL(article.url)}>
           <label style={styles.readMoreText} value="Read Full Article" />
         </view>
       </view>

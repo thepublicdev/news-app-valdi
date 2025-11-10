@@ -1,12 +1,12 @@
-import { StatefulComponent } from 'valdi_core/src/Component';
+import { Component } from 'valdi_core/src/Component';
 import { Label, View } from 'valdi_tsx/src/NativeTemplateElements';
 import { Style } from 'valdi_core/src/Style';
 import { systemBoldFont } from 'valdi_core/src/SystemFont';
-import { NewsAPIService, NewsArticle } from './services/NewsAPIService';
-import { APIKeyConfig } from './components/APIKeyConfig';
-import { NewsList } from './components/NewsList';
-import { ArticleDetail } from './components/ArticleDetail';
-import { SearchNews } from './components/SearchNews';
+import { NavigationRoot } from 'valdi_navigation/src/NavigationRoot';
+import { NavigationController } from 'valdi_navigation/src/NavigationController';
+import { $slot } from 'valdi_core/src/CompilerIntrinsics';
+import { NewsAPIService } from './services/NewsAPIService';
+import { NewsListPage } from './pages/NewsListPage';
 
 // Hardcoded API key - replace with your NewsAPI.org API key
 const NEWSAPI_KEY = '37bd379b7c7e4280ad84f7e8d176e870';
@@ -23,160 +23,26 @@ export interface AppViewModel {}
  */
 export interface AppComponentContext {}
 
-interface State {
-  apiKey: string | null;
-  articles: NewsArticle[];
-  selectedArticle: NewsArticle | null;
-  selectedCategory: string;
-  isLoading: boolean;
-  error: string | null;
-  currentView: 'list' | 'search' | 'detail';
-}
-
 /**
  * @Component
  * @ExportModel
  */
-export class App extends StatefulComponent<AppViewModel, AppComponentContext> {
-  private newsService: NewsAPIService;
-
-  state: State = {
-    apiKey: NEWSAPI_KEY,
-    articles: [],
-    selectedArticle: null,
-    selectedCategory: 'general',
-    isLoading: false,
-    error: null,
-    currentView: 'list',
-  };
-
-  constructor(renderer: any, viewModel: AppViewModel, context: AppComponentContext) {
-    super(renderer, viewModel, context);
-    this.newsService = new NewsAPIService(NEWSAPI_KEY);
-  }
-
-  onCreate(): void {
-    console.log('News App starting...');
-    this.loadNews();
-  }
-
-  private async loadNews(category?: string) {
-    const selectedCategory = category || this.state.selectedCategory;
-    this.setState({ isLoading: true, error: null });
-    try {
-      const articles = await this.newsService.getTopHeadlines('us', selectedCategory);
-      this.setState({ articles, isLoading: false });
-    } catch (error) {
-      console.error('Failed to load news:', error);
-      this.setState({ 
-        error: 'Failed to load news. Please check your API key and connection.' + error,
-        isLoading: false 
-      });
-    }
-  }
-
-  private handleCategoryChange = async (category: string) => {
-    this.setState({ selectedCategory: category });
-    await this.loadNews(category);
-  };
-
-  private handleArticleTap = (article: NewsArticle) => {
-    this.setState({ selectedArticle: article, currentView: 'detail' });
-  };
-
-  private handleBack = () => {
-    this.setState({ selectedArticle: null, currentView: 'list' });
-  };
-
-  private handleBackFromSearch = () => {
-    this.setState({ currentView: 'list' });
-  };
-
-  private handleRefresh = async () => {
-    await this.loadNews();
-  };
-
-  private handleSearchTap = () => {
-    this.setState({ currentView: 'search' });
-  };
-
-  private handleSearch = async (query: string): Promise<NewsArticle[]> => {
-    try {
-      const articles = await this.newsService.searchNews(query);
-      return articles;
-    } catch (error) {
-      console.error('Failed to search news:', error);
-      return [];
-    }
-  };
+export class App extends Component<AppViewModel, AppComponentContext> {
+  public static newsService: NewsAPIService = new NewsAPIService(NEWSAPI_KEY);
+  private navigationController?: NavigationController;
 
   onRender(): void {
-    // Show article detail view
-    if (this.state.currentView === 'detail' && this.state.selectedArticle) {
-      <view style={styles.container}>
-        <ArticleDetail 
-          article={this.state.selectedArticle}
-          onBack={this.handleBack}
-        />
-      </view>;
-      return;
-    }
-
-    // Show search view
-    if (this.state.currentView === 'search') {
-      <view style={styles.container}>
-        <SearchNews
-          onArticleTap={this.handleArticleTap}
-          onSearch={this.handleSearch}
-          onBack={this.handleBackFromSearch}
-        />
-      </view>;
-      return;
-    }
-
-    // Show loading state
-    if (this.state.isLoading) {
-      <view style={styles.container}>
-        <view style={styles.header}>
-          <label style={styles.headerTitle} value="News App" />
-        </view>
-        <view style={styles.loadingContainer}>
-          <label style={styles.loadingText} value="Loading news..." />
-        </view>
-      </view>;
-      return;
-    }
-
-    // Show error state
-    if (this.state.error) {
-      <view style={styles.container}>
-        <view style={styles.header}>
-          <label style={styles.headerTitle} value="News App" />
-        </view>
-        <view style={styles.errorContainer}>
-          <label style={styles.errorText} value={this.state.error} />
-          <view style={styles.retryButton} onTap={this.handleRefresh}>
-            <label style={styles.retryButtonText} value="Retry" />
+    <NavigationRoot>
+      {$slot((navigationController: NavigationController) => {
+        this.navigationController = navigationController;
+        <view style={styles.container}>
+          <view style={styles.header}>
+            <label style={styles.headerTitle} value="News App" />
           </view>
-        </view>
-      </view>;
-      return;
-    }
-
-    // Show news list
-    <view style={styles.container}>
-      <view style={styles.header}>
-        <label style={styles.headerTitle} value="News App" />
-      </view>
-      <NewsList 
-        articles={this.state.articles}
-        selectedCategory={this.state.selectedCategory}
-        onArticleTap={this.handleArticleTap}
-        onCategoryChange={this.handleCategoryChange}
-        onRefresh={this.handleRefresh}
-        onSearchTap={this.handleSearchTap}
-      />
-    </view>;
+          <NewsListPage />
+        </view>;
+      })}
+    </NavigationRoot>;
   }
 }
 
@@ -184,48 +50,16 @@ const styles = {
   container: new Style<View>({
     width: '100%',
     height: '100%',
-    backgroundColor: 'white',
+    backgroundColor: '#007AFF',
+    marginTop: 50,
+    flexDirection: 'column',
   }),
   header: new Style<View>({
     padding: 16,
-    backgroundColor: '#007AFF',
     alignItems: 'center',
   }),
   headerTitle: new Style<Label>({
     font: systemBoldFont(20),
-    color: 'white',
-  }),
-  loadingContainer: new Style<View>({
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  }),
-  loadingText: new Style<Label>({
-    font: systemBoldFont(16),
-    color: '#666666',
-  }),
-  errorContainer: new Style<View>({
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  }),
-  errorText: new Style<Label>({
-    font: systemBoldFont(16),
-    color: '#ff3b30',
-    textAlign: 'center',
-    marginBottom: 20,
-    numberOfLines: 0,
-  }),
-  retryButton: new Style<View>({
-    backgroundColor: '#007AFF',
-    padding: 12,
-    borderRadius: 8,
-  }),
-  retryButtonText: new Style<Label>({
-    font: systemBoldFont(16),
     color: 'white',
   }),
 };
