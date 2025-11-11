@@ -3,4 +3,4 @@
 bazel-*
 node_modules
 
-.vscode
+.vscode/
