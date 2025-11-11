@@ -32,6 +32,7 @@ export class WebViewPage extends NavigationPageComponent<ViewModel, any> {
         iosClass="ValdiWebView"
         androidClass="com.snap.newsapp.ValdiWebView"
         url={url}
+        pointerEvents="auto"
       />
     </view>;
   }
@@ -42,6 +43,7 @@ const styles = {
     width: "100%",
     height: "100%",
     backgroundColor: "white",
+    flexDirection: "column",
   }),
   header: new Style<View>({
     padding: 16,
@@ -61,7 +63,9 @@ const styles = {
     color: "#1a1a1a",
   }),
   webview: new Style<View>({
+    flexGrow: 1,
+    flexShrink: 1,
     width: "100%",
-    height: "100%",
+    minHeight: 0, // Important: allows flex child to shrink below content size
   }),
 };

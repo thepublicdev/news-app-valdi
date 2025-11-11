@@ -1,10 +1,6 @@
 import { NavigationPageComponent } from "valdi_navigation/src/NavigationPageComponent";
 import { NavigationPage } from "valdi_navigation/src/NavigationPage";
-import {
-  Label,
-  View,
-  ImageView,
-} from "valdi_tsx/src/NativeTemplateElements";
+import { Label, View, ImageView, ScrollView } from "valdi_tsx/src/NativeTemplateElements";
 import { Style } from "valdi_core/src/Style";
 import { systemFont, systemBoldFont } from "valdi_core/src/SystemFont";
 import { NewsArticle } from "../services/NewsAPIService";
@@ -15,7 +11,7 @@ interface ViewModel {
 }
 
 @NavigationPage(module)
-export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {  
+export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {
   private openURL(url: string) {
     try {
       this.navigationController.push(
@@ -47,35 +43,37 @@ export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {
         <image src={article.urlToImage} style={styles.image} />
       )}
 
-      <view style={styles.content}>
-        <label style={styles.title} value={article.title} />
+      <scroll style={styles.content}>
+        <view>
+          <label style={styles.title} value={article.title} />
 
-        <view style={styles.meta}>
-          <label style={styles.source} value={article.source.name} />
-          {article.author && (
-            <label style={styles.author} value={`By ${article.author}`} />
+          <view style={styles.meta}>
+            <label style={styles.source} value={article.source.name} />
+            {article.author && (
+              <label style={styles.author} value={`By ${article.author}`} />
+            )}
+            <label
+              style={styles.date}
+              value={new Date(article.publishedAt).toDateString()}
+            />
+          </view>
+
+          {article.description && (
+            <label style={styles.description} value={article.description} />
           )}
-          <label
-            style={styles.date}
-            value={new Date(article.publishedAt).toDateString()}
-          />
+
+          {article.content && (
+            <label style={styles.contentText} value={article.content} />
+          )}
+
+          <view
+            style={styles.readMoreButton}
+            onTap={() => this.openURL(article.url)}
+          >
+            <label style={styles.readMoreText} value="Read Full Article" />
+          </view>
         </view>
-
-        {article.description && (
-          <label style={styles.description} value={article.description} />
-        )}
-
-        {article.content && (
-          <label style={styles.contentText} value={article.content} />
-        )}
-
-        <view
-          style={styles.readMoreButton}
-          onTap={() => this.openURL(article.url)}
-        >
-          <label style={styles.readMoreText} value="Read Full Article" />
-        </view>
-      </view>
+      </scroll>
     </view>;
   }
 }
@@ -101,8 +99,10 @@ const styles = {
     height: 250,
     objectFit: "cover",
   }),
-  content: new Style<View>({
+  content: new Style<ScrollView>({
     padding: 20,
+    height: "100%",
+    width: "100%",
   }),
   title: new Style<Label>({
     font: systemBoldFont(24),
