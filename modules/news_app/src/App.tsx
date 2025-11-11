@@ -23,7 +23,7 @@ export interface AppViewModel {}
  * @ExportModel
  */
 export interface AppComponentContext {
-  webLauncher?: WebLauncher;
+  webLauncher: WebLauncher;
 }
 
 /**
