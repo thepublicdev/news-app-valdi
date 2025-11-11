@@ -51,7 +51,8 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
   };
 
   private handleArticleTap = (article: NewsArticle) => {
-    this.navigationController.push(ArticleDetailPage, { article }, {});
+    // Pass the webLauncher context from this page's context to the detail page
+    this.navigationController.push(ArticleDetailPage, { article }, this.context);
   };
 
   private handleSearchTap = () => {

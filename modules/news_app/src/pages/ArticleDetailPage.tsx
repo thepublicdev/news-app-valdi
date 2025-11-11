@@ -4,7 +4,6 @@ import {
   Label,
   View,
   ImageView,
-  ScrollView,
 } from "valdi_tsx/src/NativeTemplateElements";
 import { Style } from "valdi_core/src/Style";
 import { systemFont, systemBoldFont } from "valdi_core/src/SystemFont";
@@ -16,7 +15,7 @@ interface ViewModel {
 }
 
 @NavigationPage(module)
-export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {
+export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {  
   private openURL(url: string) {
     try {
       this.navigationController.push(
