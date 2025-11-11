@@ -10,5 +10,6 @@ valdi_android_library(
     deps = [
         "//modules/news_app:news_app_api_kt",
         "@valdi//valdi:valdi_android_support",
+        "@maven//:androidx_browser_browser",
     ],
 )

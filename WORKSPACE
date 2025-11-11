@@ -67,3 +67,16 @@ npm_repositories()
 load("@valdi//bzl:workspace_postinit.bzl", "valdi_post_initialize_workspace")
 
 valdi_post_initialize_workspace()
+
+# Maven dependencies for Android
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+
+maven_install(
+    artifacts = [
+        "androidx.browser:browser:1.8.0",
+    ],
+    repositories = [
+        "https://maven.google.com",
+        "https://repo1.maven.org/maven2",
+    ],
+)

@@ -4,7 +4,6 @@ import {
   Label,
   View,
   ImageView,
-  ScrollView,
 } from "valdi_tsx/src/NativeTemplateElements";
 import { Style } from "valdi_core/src/Style";
 import { systemFont, systemBoldFont } from "valdi_core/src/SystemFont";
