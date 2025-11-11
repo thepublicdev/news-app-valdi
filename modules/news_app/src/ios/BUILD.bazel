@@ -1,0 +1,18 @@
+objc_library(
+    name = "weblauncher_ios",
+    srcs = glob([
+        "*.m",
+    ]),
+    hdrs = glob([
+        "*.h",
+    ]),
+    copts = ["-I."],
+    sdk_frameworks = [
+        "SafariServices",
+        "UIKit",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//modules/news_app:news_app_api_objc",
+    ],
+)

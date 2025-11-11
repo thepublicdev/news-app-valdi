@@ -6,6 +6,10 @@ valdi_module(
         "src/**/*.ts",
         "src/**/*.tsx",
     ]),
+    android_class_path = "com.snap.newsapp",
+    android_deps = ["//modules/news_app/src/android:weblauncher_android"],
+    ios_deps = ["//modules/news_app/src/ios:weblauncher_ios"],
+    ios_module_name = "NewsApp",
     res = glob([
         "res/**/*.jpeg",
         "res/**/*.jpg",

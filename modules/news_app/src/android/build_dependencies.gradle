@@ -1,0 +1,61 @@
+// ============================================================================
+// Android build.gradle dependency configuration for WebLauncher
+// ============================================================================
+//
+// Add this dependency to your app's build.gradle file to enable
+// Chrome Custom Tabs support for opening URLs in an in-app browser.
+//
+// Location: <your-android-project>/app/build.gradle
+//
+// Add to the dependencies block:
+
+dependencies {
+    // ... your existing dependencies ...
+    
+    // Chrome Custom Tabs for in-app browser functionality
+    // This is required for WebLauncherImpl to work properly
+    implementation "androidx.browser:browser:1.8.0"
+    
+    // Alternatively, if you need to support older versions:
+    // implementation "androidx.browser:browser:1.5.0"
+}
+
+// ============================================================================
+// AndroidManifest.xml permission
+// ============================================================================
+//
+// Ensure your AndroidManifest.xml includes the INTERNET permission.
+// This is usually already present, but verify it's there:
+//
+// Location: <your-android-project>/app/src/main/AndroidManifest.xml
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.snap.newsapp">
+
+    <!-- Required for opening URLs -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        <!-- ... your application config ... -->
+    </application>
+
+</manifest>
+
+// ============================================================================
+// Sync and Build
+// ============================================================================
+//
+// After adding the dependency:
+//
+// 1. In Android Studio: Click "Sync Now" when prompted
+//    OR: File > Sync Project with Gradle Files
+//
+// 2. Or from command line:
+//    cd <your-android-project>
+//    ./gradlew build
+//
+// 3. Then build your Valdi app:
+//    valdi install android
+//
+// ============================================================================

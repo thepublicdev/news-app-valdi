@@ -9,6 +9,7 @@ import {
 import { Style } from "valdi_core/src/Style";
 import { systemFont, systemBoldFont } from "valdi_core/src/SystemFont";
 import { NewsArticle } from "../services/NewsAPIService";
+import { WebLauncher } from "../services/WebLauncher";
 
 interface ViewModel {
   article: NewsArticle;
@@ -16,14 +17,18 @@ interface ViewModel {
 
 @NavigationPage(module)
 export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {
+  // Access WebLauncher from context if provided
+  private get webLauncher(): WebLauncher | undefined {
+    return (this.context as any)?.webLauncher;
+  }
+  
   private openURL(url: string) {
     try {
-      // Use Valdi's native bridge to open URL in system browser
-      // @ts-ignore - nativeCall is a global function provided by Valdi runtime
-      if (typeof nativeCall !== "undefined") {
-        // nativeCall('openURL', url);
+      if (this.webLauncher) {
+        // Use native webview launcher
+        this.webLauncher.openUrl(url);
       } else {
-        console.log("Open URL in browser:", url);
+        console.log("WebLauncher not available. URL:", url);
       }
     } catch (error) {
       console.error("Failed to open URL:", error);

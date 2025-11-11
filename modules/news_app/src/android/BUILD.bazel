@@ -1,0 +1,14 @@
+load("@valdi//bzl/valdi:valdi_android_library.bzl", "valdi_android_library")
+
+valdi_android_library(
+    name = "weblauncher_android",
+    srcs = glob([
+        "*.kt",
+        "*.java",
+    ]),
+    visibility = ["//visibility:public"],
+    deps = [
+        "//modules/news_app:news_app_api_kt",
+        "@valdi//valdi:valdi_android_support",
+    ],
+)
