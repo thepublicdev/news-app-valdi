@@ -2,6 +2,7 @@ objc_library(
     name = "weblauncher_ios",
     srcs = glob([
         "*.m",
+        "*.swift"
     ]),
     hdrs = glob([
         "*.h",

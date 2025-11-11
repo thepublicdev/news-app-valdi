@@ -7,7 +7,6 @@ import { NavigationController } from 'valdi_navigation/src/NavigationController'
 import { $slot } from 'valdi_core/src/CompilerIntrinsics';
 import { NewsAPIService } from './services/NewsAPIService';
 import { NewsListPage } from './pages/NewsListPage';
-import { WebLauncher } from './services/WebLauncher';
 
 // Hardcoded API key - replace with your NewsAPI.org API key
 const NEWSAPI_KEY = '37bd379b7c7e4280ad84f7e8d176e870';
@@ -23,7 +22,6 @@ export interface AppViewModel {}
  * @ExportModel
  */
 export interface AppComponentContext {
-  webLauncher: WebLauncher;
 }
 
 /**

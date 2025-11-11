@@ -1,9 +1,6 @@
 import { NavigationPageComponent } from "valdi_navigation/src/NavigationPageComponent";
 import { NavigationPage } from "valdi_navigation/src/NavigationPage";
-import {
-  Label,
-  View,
-} from "valdi_tsx/src/NativeTemplateElements";
+import { Label, View } from "valdi_tsx/src/NativeTemplateElements";
 import { Style } from "valdi_core/src/Style";
 import { systemFont } from "valdi_core/src/SystemFont";
 
@@ -27,14 +24,13 @@ export class WebViewPage extends NavigationPageComponent<ViewModel, any> {
       <view style={styles.header}>
         <view style={styles.headerContent} onTap={this.handleBack}>
           <label style={styles.backButton} value="← Back" />
-          {title && <label style={styles.headerTitle} value={title} numberOfLines={1} />}
         </view>
       </view>
 
       <custom-view
         style={styles.webview}
-        iosClass="WKWebView"
-        androidClass="android.webkit.WebView"
+        iosClass="ValdiWebView"
+        androidClass="com.snap.newsapp.ValdiWebView"
         url={url}
       />
     </view>;
@@ -49,7 +45,7 @@ const styles = {
   }),
   header: new Style<View>({
     padding: 16,
-    backgroundColor: "white"
+    backgroundColor: "white",
   }),
   headerContent: new Style<View>({
     flexDirection: "row",
