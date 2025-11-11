@@ -9,6 +9,7 @@ import {
 import { Style } from "valdi_core/src/Style";
 import { systemFont, systemBoldFont } from "valdi_core/src/SystemFont";
 import { NewsArticle } from "../services/NewsAPIService";
+import { WebViewPage } from "./WebViewPage";
 
 interface ViewModel {
   article: NewsArticle;
@@ -18,13 +19,14 @@ interface ViewModel {
 export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {
   private openURL(url: string) {
     try {
-      // Use Valdi's native bridge to open URL in system browser
-      // @ts-ignore - nativeCall is a global function provided by Valdi runtime
-      if (typeof nativeCall !== "undefined") {
-        // nativeCall('openURL', url);
-      } else {
-        console.log("Open URL in browser:", url);
-      }
+      this.navigationController.push(
+        WebViewPage,
+        {
+          url: url,
+          title: "Full Article",
+        },
+        {}
+      );
     } catch (error) {
       console.error("Failed to open URL:", error);
     }
