@@ -3,6 +3,7 @@ import { NavigationPage } from "valdi_navigation/src/NavigationPage";
 import { Label, View } from "valdi_tsx/src/NativeTemplateElements";
 import { Style } from "valdi_core/src/Style";
 import { systemFont } from "valdi_core/src/SystemFont";
+import { Device } from "valdi_core/src/Device";
 
 interface ViewModel {
   url: string;
@@ -18,9 +19,16 @@ export class WebViewPage extends NavigationPageComponent<ViewModel, any> {
   onRender(): void {
     const { url, title } = this.viewModel;
 
+    const topInset = Device.getDisplayTopInset();
+    const bottomInset = Device.getDisplayBottomInset();
+
     console.log("Opening URL in WebViewPage:", url);
 
-    <view style={styles.container}>
+    <view
+      style={styles.container}
+      paddingTop={topInset}
+      paddingBottom={bottomInset}
+    >
       <view style={styles.header}>
         <view style={styles.headerContent} onTap={this.handleBack}>
           <label style={styles.backButton} value="← Back" />
@@ -44,7 +52,6 @@ const styles = {
     height: "100%",
     backgroundColor: "white",
     flexDirection: "column",
-    marginTop: 60,
   }),
   header: new Style<View>({
     padding: 16,

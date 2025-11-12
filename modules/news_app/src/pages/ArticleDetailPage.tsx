@@ -1,10 +1,16 @@
 import { NavigationPageComponent } from "valdi_navigation/src/NavigationPageComponent";
 import { NavigationPage } from "valdi_navigation/src/NavigationPage";
-import { Label, View, ImageView, ScrollView } from "valdi_tsx/src/NativeTemplateElements";
+import {
+  Label,
+  View,
+  ImageView,
+  ScrollView,
+} from "valdi_tsx/src/NativeTemplateElements";
 import { Style } from "valdi_core/src/Style";
 import { systemFont, systemBoldFont } from "valdi_core/src/SystemFont";
 import { NewsArticle } from "../services/NewsAPIService";
 import { WebViewPage } from "./WebViewPage";
+import { Device } from "valdi_core/src/Device";
 
 interface ViewModel {
   article: NewsArticle;
@@ -34,7 +40,14 @@ export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {
   onRender(): void {
     const article = this.viewModel.article;
 
-    <view style={styles.container}>
+    const topInset = Device.getDisplayTopInset();
+    const bottomInset = Device.getDisplayBottomInset();
+
+    <view
+      style={styles.container}
+      paddingTop={topInset}
+      paddingBottom={bottomInset}
+    >
       <view style={styles.header} onTap={this.handleBack}>
         <label style={styles.backButton} value="← Back" />
       </view>
@@ -83,7 +96,6 @@ const styles = {
     width: "100%",
     height: "100%",
     backgroundColor: "white",
-    marginTop: 60,
   }),
   header: new Style<View>({
     padding: 16,
