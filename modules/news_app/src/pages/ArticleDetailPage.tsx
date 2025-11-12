@@ -83,6 +83,7 @@ const styles = {
     width: "100%",
     height: "100%",
     backgroundColor: "white",
+    marginTop: 60,
   }),
   header: new Style<View>({
     padding: 16,

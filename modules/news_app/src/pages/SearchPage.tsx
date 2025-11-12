@@ -54,7 +54,7 @@ export class SearchPage extends NavigationPageStatefulComponent<{}, any> {
         <view style={styles.backButton} onTap={this.handleBack}>
           <label style={styles.backButtonText} value="← Back" />
         </view>
-        <label style={styles.headerTitle} value="Search News" />
+        {/* <label style={styles.headerTitle} value="Search News" /> */}
       </view>
 
       <view style={styles.searchContainer}>
@@ -117,6 +117,7 @@ const styles = {
     height: '100%',
     backgroundColor: '#007AFF',
     flexDirection: 'column',
+    marginTop: 60,
   }),
   header: new Style<View>({
     padding: 16,

@@ -102,7 +102,8 @@ const styles = {
   container: new Style<View>({
     width: '100%',
     height: '100%',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#ffffff',
+    marginTop: 60,
   }),
   loadingContainer: new Style<View>({
     width: '100%',

@@ -44,6 +44,7 @@ const styles = {
     height: "100%",
     backgroundColor: "white",
     flexDirection: "column",
+    marginTop: 60,
   }),
   header: new Style<View>({
     padding: 16,
