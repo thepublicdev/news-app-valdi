@@ -1,27 +1,14 @@
-load("@build_bazel_rules_swift//swift:swift.bzl", "swift_library")
-
-swift_library(
-    name = "weblauncher_swift",
-    srcs = glob(["*.swift"]),
-    module_name = "ValdiWebView",
-    visibility = ["//visibility:public"],
-    deps = [
-        "//modules/news_app:news_app_api_objc",
-    ],
-)
-
 objc_library(
     name = "weblauncher_ios",
     srcs = glob(["*.m"]),
     hdrs = glob(["*.h"]),
     copts = ["-I."],
     sdk_frameworks = [
-        "SafariServices",
+        "WebKit",
         "UIKit",
     ],
     visibility = ["//visibility:public"],
     deps = [
-        ":weblauncher_swift",
         "//modules/news_app:news_app_api_objc",
     ],
 )
