@@ -29,9 +29,9 @@ export class NewsAPIService {
     this.httpClient = new HTTPClient(this.baseURL);
   }
 
-  async getTopHeadlines(country: string = 'us', category?: string): Promise<NewsArticle[]> {
+  async getTopHeadlines(country: string = 'us', category?: string, page: number = 1, pageSize: number = 20): Promise<NewsArticle[]> {
     try {
-      let path = `/top-headlines?country=${country}&apiKey=${this.apiKey}`;
+      let path = `/top-headlines?country=${country}&apiKey=${this.apiKey}&page=${page}&pageSize=${pageSize}`;
       if (category) {
         path += `&category=${category}`;
       }
@@ -60,9 +60,9 @@ export class NewsAPIService {
     }
   }
 
-  async searchNews(query: string): Promise<NewsArticle[]> {
+  async searchNews(query: string, page: number = 1, pageSize: number = 20): Promise<NewsArticle[]> {
     try {
-      const path = `/everything?q=${encodeURIComponent(query)}&apiKey=${this.apiKey}&sortBy=publishedAt`;
+      const path = `/everything?q=${encodeURIComponent(query)}&apiKey=${this.apiKey}&sortBy=publishedAt&page=${page}&pageSize=${pageSize}`;
       
       const headers = {
         'User-Agent': 'NewsApp/1.0'
