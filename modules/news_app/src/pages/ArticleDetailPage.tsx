@@ -57,34 +57,32 @@ export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {
       )}
 
       <scroll style={styles.content}>
-        <view>
-          <label style={styles.title} value={article.title} />
+        <label style={styles.title} value={article.title} />
 
-          <view style={styles.meta}>
-            <label style={styles.source} value={article.source.name} />
-            {article.author && (
-              <label style={styles.author} value={`By ${article.author}`} />
-            )}
-            <label
-              style={styles.date}
-              value={new Date(article.publishedAt).toDateString()}
-            />
-          </view>
-
-          {article.description && (
-            <label style={styles.description} value={article.description} />
+        <view style={styles.meta}>
+          <label style={styles.source} value={article.source.name} />
+          {article.author && (
+            <label style={styles.author} value={`By ${article.author}`} />
           )}
+          <label
+            style={styles.date}
+            value={new Date(article.publishedAt).toDateString()}
+          />
+        </view>
 
-          {article.content && (
-            <label style={styles.contentText} value={article.content} />
-          )}
+        {article.description && (
+          <label style={styles.description} value={article.description} />
+        )}
 
-          <view
-            style={styles.readMoreButton}
-            onTap={() => this.openURL(article.url)}
-          >
-            <label style={styles.readMoreText} value="Read Full Article" />
-          </view>
+        {article.content && (
+          <label style={styles.contentText} value={article.content} />
+        )}
+
+        <view
+          style={styles.readMoreButton}
+          onTap={() => this.openURL(article.url)}
+        >
+          <label style={styles.readMoreText} value="Read Full Article" />
         </view>
       </scroll>
     </view>;
@@ -96,6 +94,7 @@ const styles = {
     width: "100%",
     height: "100%",
     backgroundColor: "white",
+    flexDirection: "column",
   }),
   header: new Style<View>({
     padding: 16,
@@ -114,8 +113,9 @@ const styles = {
   }),
   content: new Style<ScrollView>({
     padding: 20,
-    height: "100%",
     width: "100%",
+    flexGrow: 1,
+    flexShrink: 1,
   }),
   title: new Style<Label>({
     font: systemBoldFont(24),
