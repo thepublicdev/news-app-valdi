@@ -73,7 +73,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 maven_install(
     artifacts = [
-        "androidx.browser:browser:1.8.0",
+        "androidx.webkit:webkit:1.9.0",
     ],
     repositories = [
         "https://maven.google.com",

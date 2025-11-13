@@ -1,8 +1,6 @@
- package com.snap.newsapp
+package com.snap.newsapp
 
 import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import android.util.AttributeSet
 import android.util.Log
 import android.view.MotionEvent
@@ -18,6 +16,9 @@ class ValdiWebView @JvmOverloads constructor(
     attrs: AttributeSet? = null
 ) : WebView(context, attrs) {
 
+    private var lastTouchX = 0f
+    private var lastTouchY = 0f
+
     init {
         with(settings) {
             javaScriptEnabled = true
@@ -30,23 +31,88 @@ class ValdiWebView @JvmOverloads constructor(
             mixedContentMode = android.webkit.WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         }
 
+        // Enable both scrollbars
         isVerticalScrollBarEnabled = true
         isHorizontalScrollBarEnabled = true
+        
+        // Important: Make the view interactive
         isClickable = true
         isFocusable = true
         isFocusableInTouchMode = true
 
-        // Handle navigation properly
-        webViewClient = object : WebViewClient() {}
-
-        // Ensure parent doesn’t intercept touch events (for scroll & click)
-        setOnTouchListener { v, event ->
-            if (event.action == MotionEvent.ACTION_DOWN ||
-                event.action == MotionEvent.ACTION_MOVE
-            ) {
-                v.parent?.requestDisallowInterceptTouchEvent(true)
+        webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): Boolean {
+                // Allow navigation within WebView
+                return false
             }
-            false // Let WebView handle the event itself
+        }
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        event ?: return super.onTouchEvent(event)
+
+        when (event.action) {
+            MotionEvent.ACTION_DOWN -> {
+                lastTouchX = event.x
+                lastTouchY = event.y
+                Log.d("ValdiWebView", "Touch DOWN at (${event.x}, ${event.y})")
+                // Tell parent not to intercept touch events
+                parent?.requestDisallowInterceptTouchEvent(true)
+            }
+            MotionEvent.ACTION_MOVE -> {
+                val deltaX = Math.abs(event.x - lastTouchX)
+                val deltaY = Math.abs(event.y - lastTouchY)
+
+                // Always prevent parent interception when moving
+                parent?.requestDisallowInterceptTouchEvent(true)
+
+                // Check if we can scroll in the direction the user is trying to scroll
+                val canScrollHorizontally = canScrollHorizontally(
+                    if (event.x < lastTouchX) 1 else -1
+                )
+                val canScrollVertically = canScrollVertically(
+                    if (event.y < lastTouchY) 1 else -1
+                )
+
+                Log.d("ValdiWebView", "Touch MOVE to (${event.x}, ${event.y}) - " +
+                      "deltaX: $deltaX, deltaY: $deltaY, " +
+                      "canScrollH: $canScrollHorizontally, canScrollV: $canScrollVertically")
+
+                // If we can't scroll in either direction, let parent handle it
+                if (!canScrollHorizontally && !canScrollVertically) {
+                    parent?.requestDisallowInterceptTouchEvent(false)
+                } else {
+                    parent?.requestDisallowInterceptTouchEvent(true)
+                }
+
+                lastTouchX = event.x
+                lastTouchY = event.y
+            }
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                val action = if (event.action == MotionEvent.ACTION_UP) "UP" else "CANCEL"
+                Log.d("ValdiWebView", "Touch $action at (${event.x}, ${event.y})")
+                // Allow parent to intercept again
+                parent?.requestDisallowInterceptTouchEvent(false)
+            }
+        }
+
+        return super.onTouchEvent(event)
+    }
+
+    override fun onOverScrolled(
+        scrollX: Int,
+        scrollY: Int,
+        clampedX: Boolean,
+        clampedY: Boolean
+    ) {
+        super.onOverScrolled(scrollX, scrollY, clampedX, clampedY)
+        
+        // If we've reached the edge, allow parent to intercept
+        if (clampedX || clampedY) {
+            parent?.requestDisallowInterceptTouchEvent(false)
         }
     }
 
