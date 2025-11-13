@@ -10,11 +10,13 @@ import android.webkit.WebViewClient
 import com.snap.valdi.attributes.AttributesBinder
 import com.snap.valdi.attributes.AttributesBindingContext
 import com.snap.valdi.attributes.RegisterAttributesBinder
+import com.snap.valdi.views.ValdiTouchTarget
+import com.snap.valdi.views.ValdiTouchEventResult
 
 class ValdiWebView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null
-) : WebView(context, attrs) {
+) : WebView(context, attrs), ValdiTouchTarget {
 
     private var lastTouchX = 0f
     private var lastTouchY = 0f
@@ -119,6 +121,31 @@ class ValdiWebView @JvmOverloads constructor(
     fun setUrl(url: String) {
         Log.d("ValdiWebView", "Loading URL: $url")
         loadUrl(url)
+    }
+
+    // ValdiTouchTarget implementation
+    override fun processTouchEvent(event: MotionEvent): ValdiTouchEventResult {
+        Log.d("ValdiWebView", "processTouchEvent: action=${event.action}, " +
+              "x=${event.x}, y=${event.y}")
+        
+        // Dispatch the event to the WebView's standard touch handling
+        val handled = dispatchTouchEvent(event)
+        
+        Log.d("ValdiWebView", "processTouchEvent handled=$handled")
+        
+        // Let the WebView handle scrolling without canceling other gestures
+        // The WebView should consume events but allow parent gestures to work
+        return ValdiTouchEventResult.IgnoreEvent
+    }
+
+    override fun hitTest(event: MotionEvent): Boolean? {
+        // Return true to indicate this view should receive touch events
+        // Return false to pass through to views underneath
+        // Return null to use default hit testing
+        Log.d("ValdiWebView", "hitTest: x=${event.x}, y=${event.y}")
+        
+        // Use default hit testing - let Valdi framework decide
+        return null
     }
 }
 
