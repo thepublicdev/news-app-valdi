@@ -40,7 +40,7 @@ export class WebViewPage extends NavigationPageComponent<ViewModel, any> {
         iosClass="ValdiWebView"
         androidClass="com.snap.newsapp.ValdiWebView"
         url={url}
-        pointerEvents="auto"
+        // pointerEvents="auto"
       />
     </view>;
   }
