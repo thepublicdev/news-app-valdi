@@ -63,6 +63,7 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
   }
 
   private async loadMoreNews() {
+    console.log("Attempting to load more news...", this.state.currentPage);
     if (this.state.isLoadingMore || !this.state.hasMore) {
       return;
     }
