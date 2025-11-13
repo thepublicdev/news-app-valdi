@@ -14,7 +14,10 @@ interface State {
   articles: NewsArticle[];
   selectedCategory: string;
   isLoading: boolean;
+  isLoadingMore: boolean;
   error: string | null;
+  currentPage: number;
+  hasMore: boolean;
 }
 
 @NavigationPage(module)
@@ -23,22 +26,33 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
     articles: [],
     selectedCategory: "general",
     isLoading: false,
+    isLoadingMore: false,
     error: null,
+    currentPage: 1,
+    hasMore: true,
   };
 
   onCreate(): void {
     this.loadNews();
   }
 
-  private async loadNews(category?: string) {
+  private async loadNews(category?: string, reset: boolean = true) {
     const selectedCategory = category || this.state.selectedCategory;
+    const page = reset ? 1 : this.state.currentPage;
+    
     this.setState({ isLoading: true, error: null });
     try {
       const articles = await App.newsService.getTopHeadlines(
         "us",
-        selectedCategory
+        selectedCategory,
+        page
       );
-      this.setState({ articles, isLoading: false });
+      this.setState({ 
+        articles, 
+        isLoading: false, 
+        currentPage: page,
+        hasMore: articles.length >= 20
+      });
     } catch (error) {
       console.error("Failed to load news:", error);
       this.setState({
@@ -48,9 +62,39 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
     }
   }
 
+  private async loadMoreNews() {
+    if (this.state.isLoadingMore || !this.state.hasMore) {
+      return;
+    }
+
+    this.setState({ isLoadingMore: true });
+    try {
+      const nextPage = this.state.currentPage + 1;
+      const newArticles = await App.newsService.getTopHeadlines(
+        "us",
+        this.state.selectedCategory,
+        nextPage
+      );
+      
+      this.setState({ 
+        articles: [...this.state.articles, ...newArticles],
+        currentPage: nextPage,
+        isLoadingMore: false,
+        hasMore: newArticles.length >= 20
+      });
+    } catch (error) {
+      console.error("Failed to load more news:", error);
+      this.setState({ isLoadingMore: false });
+    }
+  }
+
   private handleCategoryChange = async (category: string) => {
-    this.setState({ selectedCategory: category });
-    await this.loadNews(category);
+    this.setState({ selectedCategory: category, currentPage: 1 });
+    await this.loadNews(category, true);
+  };
+
+  private handleLoadMore = async () => {
+    await this.loadMoreNews();
   };
 
   private handleArticleTap = (article: NewsArticle) => {
@@ -109,6 +153,9 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
         onCategoryChange={this.handleCategoryChange}
         onRefresh={this.handleRefresh}
         onSearchTap={this.handleSearchTap}
+        onLoadMore={this.handleLoadMore}
+        isLoadingMore={this.state.isLoadingMore}
+        hasMore={this.state.hasMore}
       />
     </view>;
   }

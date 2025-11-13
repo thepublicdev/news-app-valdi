@@ -11,6 +11,9 @@ interface ViewModel {
   onCategoryChange: (category: string) => void;
   onRefresh: () => void;
   onSearchTap: () => void;
+  onLoadMore: () => void;
+  isLoadingMore: boolean;
+  hasMore: boolean;
 }
 
 const CATEGORIES = [
@@ -55,7 +58,14 @@ export class NewsList extends Component<ViewModel> {
           <label style={styles.searchIcon} value="🔍" />
         </view>
       </view>
-      <scroll style={styles.articlesScroll}>
+      <scroll 
+        style={styles.articlesScroll}
+        onScrollEnd={() => {
+          if (this.viewModel.hasMore && !this.viewModel.isLoadingMore) {
+            this.viewModel.onLoadMore();
+          }
+        }}
+      >
         {this.viewModel.articles.length === 0 ? (
           <view style={styles.emptyContainer}>
             <label style={styles.emptyText} value="No articles found" />
@@ -64,28 +74,40 @@ export class NewsList extends Component<ViewModel> {
             </view>
           </view>
         ) : (
-          this.viewModel.articles.map((article, index) => (
-          <view 
-            key={`article-${index}`} 
-            style={styles.articleCard}
-            onTap={() => this.viewModel.onArticleTap(article)}
-          >
-            {article.urlToImage && (
-              <image 
-                src={article.urlToImage} 
-                style={styles.articleImage}
-              />
+          <view style={styles.articlesContainer}>
+            {this.viewModel.articles.map((article, index) => (
+              <view 
+                key={`article-${index}`} 
+                style={styles.articleCard}
+                onTap={() => this.viewModel.onArticleTap(article)}
+              >
+                {article.urlToImage && (
+                  <image 
+                    src={article.urlToImage} 
+                    style={styles.articleImage}
+                  />
+                )}
+                <view style={styles.articleContent}>
+                  <label style={styles.articleTitle} value={article.title} />
+                  {article.description && (
+                    <label style={styles.articleDescription} value={article.description} />
+                  )}
+                  <label style={styles.articleSource} value={article.source.name} />
+                </view>
+              </view>
+            ))}
+            {this.viewModel.isLoadingMore && (
+              <view style={styles.loadingMoreContainer}>
+                <label style={styles.loadingMoreText} value="Loading more articles..." />
+              </view>
             )}
-            <view style={styles.articleContent}>
-              <label style={styles.articleTitle} value={article.title} />
-              {article.description && (
-                <label style={styles.articleDescription} value={article.description} />
-              )}
-              <label style={styles.articleSource} value={article.source.name} />
-            </view>
+            {!this.viewModel.hasMore && this.viewModel.articles.length > 0 && (
+              <view style={styles.endOfListContainer}>
+                <label style={styles.endOfListText} value="No more articles" />
+              </view>
+            )}
           </view>
-        ))
-      )}
+        )}
       </scroll>
     </view>;
   }
@@ -152,6 +174,9 @@ const styles = {
     height: '100%',
     backgroundColor: '#f5f5f5',
   }),
+  articlesContainer: new Style<View>({
+    width: '100%',
+  }),
   emptyContainer: new Style<View>({
     padding: 40,
     justifyContent: 'center',
@@ -203,6 +228,24 @@ const styles = {
   }),
   articleSource: new Style<Label>({
     font: systemFont(12),
+    color: '#999999',
+  }),
+  loadingMoreContainer: new Style<View>({
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }),
+  loadingMoreText: new Style<Label>({
+    font: systemFont(14),
+    color: '#999999',
+  }),
+  endOfListContainer: new Style<View>({
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }),
+  endOfListText: new Style<Label>({
+    font: systemFont(14),
     color: '#999999',
   }),
 };

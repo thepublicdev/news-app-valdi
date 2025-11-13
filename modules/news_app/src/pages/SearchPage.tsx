@@ -18,7 +18,10 @@ interface State {
   searchQuery: string;
   articles: NewsArticle[];
   isSearching: boolean;
+  isLoadingMore: boolean;
   hasSearched: boolean;
+  currentPage: number;
+  hasMore: boolean;
 }
 
 @NavigationPage(module)
@@ -27,7 +30,10 @@ export class SearchPage extends NavigationPageStatefulComponent<{}, any> {
     searchQuery: "",
     articles: [],
     isSearching: false,
+    isLoadingMore: false,
     hasSearched: false,
+    currentPage: 1,
+    hasMore: true,
   };
 
   private handleSearchChange = (event: { text: string }) => {
@@ -36,16 +42,47 @@ export class SearchPage extends NavigationPageStatefulComponent<{}, any> {
 
   private handleSearchSubmit = async () => {
     if (this.state.searchQuery.trim().length > 0) {
-      this.setState({ isSearching: true, hasSearched: true });
+      this.setState({ isSearching: true, hasSearched: true, currentPage: 1 });
       try {
         const articles = await App.newsService.searchNews(
-          this.state.searchQuery
+          this.state.searchQuery,
+          1
         );
-        this.setState({ articles, isSearching: false });
+        this.setState({ 
+          articles, 
+          isSearching: false, 
+          currentPage: 1,
+          hasMore: articles.length >= 20
+        });
       } catch (error) {
         console.error("Search failed:", error);
         this.setState({ articles: [], isSearching: false });
       }
+    }
+  };
+
+  private handleLoadMore = async () => {
+    if (this.state.isLoadingMore || !this.state.hasMore || this.state.searchQuery.trim().length === 0) {
+      return;
+    }
+
+    this.setState({ isLoadingMore: true });
+    try {
+      const nextPage = this.state.currentPage + 1;
+      const newArticles = await App.newsService.searchNews(
+        this.state.searchQuery,
+        nextPage
+      );
+      
+      this.setState({ 
+        articles: [...this.state.articles, ...newArticles],
+        currentPage: nextPage,
+        isLoadingMore: false,
+        hasMore: newArticles.length >= 20
+      });
+    } catch (error) {
+      console.error("Failed to load more search results:", error);
+      this.setState({ isLoadingMore: false });
     }
   };
 
@@ -86,7 +123,14 @@ export class SearchPage extends NavigationPageStatefulComponent<{}, any> {
         </view>
       </view>
 
-      <scroll style={styles.resultsScroll}>
+      <scroll 
+        style={styles.resultsScroll}
+        onScrollEnd={() => {
+          if (this.state.hasMore && !this.state.isLoadingMore && this.state.articles.length > 0) {
+            this.handleLoadMore();
+          }
+        }}
+      >
         {this.state.isSearching ? (
           <view style={styles.centerContainer}>
             <label style={styles.messageText} value="Searching..." />
@@ -106,30 +150,42 @@ export class SearchPage extends NavigationPageStatefulComponent<{}, any> {
             />
           </view>
         ) : (
-          this.state.articles.map((article, index) => (
-            <view
-              key={`article-${index}`}
-              style={styles.articleCard}
-              onTap={() => this.handleArticleTap(article)}
-            >
-              {article.urlToImage && (
-                <image src={article.urlToImage} style={styles.articleImage} />
-              )}
-              <view style={styles.articleContent}>
-                <label style={styles.articleTitle} value={article.title} />
-                {article.description && (
-                  <label
-                    style={styles.articleDescription}
-                    value={article.description}
-                  />
+          <view style={styles.resultsContainer}>
+            {this.state.articles.map((article, index) => (
+              <view
+                key={`article-${index}`}
+                style={styles.articleCard}
+                onTap={() => this.handleArticleTap(article)}
+              >
+                {article.urlToImage && (
+                  <image src={article.urlToImage} style={styles.articleImage} />
                 )}
-                <label
-                  style={styles.articleSource}
-                  value={article.source.name}
-                />
+                <view style={styles.articleContent}>
+                  <label style={styles.articleTitle} value={article.title} />
+                  {article.description && (
+                    <label
+                      style={styles.articleDescription}
+                      value={article.description}
+                    />
+                  )}
+                  <label
+                    style={styles.articleSource}
+                    value={article.source.name}
+                  />
+                </view>
               </view>
-            </view>
-          ))
+            ))}
+            {this.state.isLoadingMore && (
+              <view style={styles.loadingMoreContainer}>
+                <label style={styles.loadingMoreText} value="Loading more results..." />
+              </view>
+            )}
+            {!this.state.hasMore && this.state.articles.length > 0 && (
+              <view style={styles.endOfListContainer}>
+                <label style={styles.endOfListText} value="No more results" />
+              </view>
+            )}
+          </view>
         )}
       </scroll>
     </view>;
@@ -191,6 +247,9 @@ const styles = {
     height: "100%",
     backgroundColor: "#f5f5f5",
   }),
+  resultsContainer: new Style<View>({
+    width: "100%",
+  }),
   centerContainer: new Style<View>({
     padding: 40,
     justifyContent: "center",
@@ -232,6 +291,24 @@ const styles = {
   }),
   articleSource: new Style<Label>({
     font: systemFont(12),
+    color: "#999999",
+  }),
+  loadingMoreContainer: new Style<View>({
+    padding: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  }),
+  loadingMoreText: new Style<Label>({
+    font: systemFont(14),
+    color: "#999999",
+  }),
+  endOfListContainer: new Style<View>({
+    padding: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  }),
+  endOfListText: new Style<Label>({
+    font: systemFont(14),
     color: "#999999",
   }),
 };
