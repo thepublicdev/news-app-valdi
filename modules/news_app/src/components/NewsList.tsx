@@ -61,6 +61,7 @@ export class NewsList extends Component<ViewModel> {
       <scroll 
         style={styles.articlesScroll}
         onScrollEnd={() => {
+          console.log("Scrolled to end of articles list", "hasMore -> ", this.viewModel.hasMore, ", isLoadingMore -> ",this.viewModel.isLoadingMore);
           if (this.viewModel.hasMore && !this.viewModel.isLoadingMore) {
             this.viewModel.onLoadMore();
           }

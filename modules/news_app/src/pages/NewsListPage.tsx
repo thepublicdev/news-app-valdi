@@ -39,7 +39,7 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
   private async loadNews(category?: string, reset: boolean = true) {
     const selectedCategory = category || this.state.selectedCategory;
     const page = reset ? 1 : this.state.currentPage;
-    
+
     this.setState({ isLoading: true, error: null });
     try {
       const articles = await App.newsService.getTopHeadlines(
@@ -47,11 +47,16 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
         selectedCategory,
         page
       );
-      this.setState({ 
-        articles, 
-        isLoading: false, 
+      console.log("Loaded news articles:", {
+        count: articles.length,
+        category: selectedCategory,
+        page: page,
+      });
+      this.setState({
+        articles,
+        isLoading: false,
         currentPage: page,
-        hasMore: articles.length >= 20
+        hasMore: articles.length >= 100,
       });
     } catch (error) {
       console.error("Failed to load news:", error);
@@ -76,12 +81,12 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
         this.state.selectedCategory,
         nextPage
       );
-      
-      this.setState({ 
+
+      this.setState({
         articles: [...this.state.articles, ...newArticles],
         currentPage: nextPage,
         isLoadingMore: false,
-        hasMore: newArticles.length >= 20
+        hasMore: newArticles.length >= 20,
       });
     } catch (error) {
       console.error("Failed to load more news:", error);
@@ -122,9 +127,7 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
     console.log("Top Inset:", topInset, "Bottom Inset:", bottomInset);
 
     if (this.state.isLoading && this.state.articles.length === 0) {
-      <view
-        style={styles.container}
-      >
+      <view style={styles.container}>
         <view style={styles.loadingContainer}>
           <label style={styles.loadingText} value="Loading news..." />
         </view>
@@ -144,9 +147,17 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
       return;
     }
 
-    <view style={styles.container}
-            paddingTop={topInset}
-        paddingBottom={bottomInset}>
+    console.log("Rendering NewsList with articles:", {
+      hasMore: this.state.hasMore,
+      isLoadingMore: this.state.isLoadingMore,
+      articleCount: this.state.articles.length,
+    });
+
+    <view
+      style={styles.container}
+      paddingTop={topInset}
+      paddingBottom={bottomInset}
+    >
       <NewsList
         articles={this.state.articles}
         selectedCategory={this.state.selectedCategory}
