@@ -8,12 +8,12 @@ import {
 } from "valdi_tsx/src/NativeTemplateElements";
 import { Style } from "valdi_core/src/Style";
 import { systemFont, systemBoldFont } from "valdi_core/src/SystemFont";
-import { NewsArticle } from "../services/NewsAPIService";
+import { Article } from "../services/NewsAPIService";
 import { WebViewPage } from "./WebViewPage";
 import { Device } from "valdi_core/src/Device";
 
 interface ViewModel {
-  article: NewsArticle;
+  article: Article;
 }
 
 @NavigationPage(module)
@@ -52,15 +52,15 @@ export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {
         <label style={styles.backButton} value="← Back" />
       </view>
 
-      {article.urlToImage && (
-        <image src={article.urlToImage} style={styles.image} />
+      {article.imageUrl && (
+        <image src={article.imageUrl} style={styles.image} />
       )}
 
       <scroll style={styles.content}>
         <label style={styles.title} value={article.title} />
 
         <view style={styles.meta}>
-          <label style={styles.source} value={article.source.name} />
+          <label style={styles.source} value={article.source} />
           {article.author && (
             <label style={styles.author} value={`By ${article.author}`} />
           )}
@@ -72,10 +72,6 @@ export class ArticleDetailPage extends NavigationPageComponent<ViewModel, any> {
 
         {article.description && (
           <label style={styles.description} value={article.description} />
-        )}
-
-        {article.content && (
-          <label style={styles.contentText} value={article.content} />
         )}
 
         <view

@@ -2,70 +2,69 @@ import { Component } from 'valdi_core/src/Component';
 import { Label, View, ImageView, ScrollView } from 'valdi_tsx/src/NativeTemplateElements';
 import { Style } from 'valdi_core/src/Style';
 import { systemFont, systemBoldFont } from 'valdi_core/src/SystemFont';
-import { NewsArticle } from '../services/NewsAPIService';
+import { Article, Source } from '../services/NewsAPIService';
 
 interface ViewModel {
-  articles: NewsArticle[];
-  selectedCategory: string;
-  onArticleTap: (article: NewsArticle) => void;
-  onCategoryChange: (category: string) => void;
+  articles: Article[];
+  sources: Source[];
+  selectedSource: string | null;
+  onArticleTap: (article: Article) => void;
+  onSourceChange: (sourceId: string | null) => void;
   onRefresh: () => void;
-  onSearchTap: () => void;
-  onLoadMore: () => void;
-  isLoadingMore: boolean;
-  hasMore: boolean;
 }
-
-const CATEGORIES = [
-  { id: 'general', label: 'General' },
-  { id: 'business', label: 'Business' },
-  { id: 'technology', label: 'Technology' },
-  { id: 'entertainment', label: 'Entertainment' },
-  { id: 'sports', label: 'Sports' },
-  { id: 'science', label: 'Science' },
-  { id: 'health', label: 'Health' },
-];
 
 export class NewsList extends Component<ViewModel> {
   onRender(): void {
     <view style={styles.container}>
-      <view style={styles.categoryHeader}>
-        <scroll style={styles.categoryScroll} horizontal={true}>
-          <view style={styles.categoryContainer}>
-            {CATEGORIES.map((category) => (
+      <view style={styles.sourceHeader}>
+        <scroll style={styles.sourceScroll} horizontal={true}>
+          <view style={styles.sourceContainer}>
+            {/* All Sources tab */}
             <view
-              key={category.id}
+              key="all-sources"
               style={
-                this.viewModel.selectedCategory === category.id
-                  ? styles.categoryPillActive
-                  : styles.categoryPill
+                this.viewModel.selectedSource === null
+                  ? styles.sourcePillActive
+                  : styles.sourcePill
               }
-              onTap={() => this.viewModel.onCategoryChange(category.id)}
+              onTap={() => this.viewModel.onSourceChange(null)}
             >
               <label
                 style={
-                  this.viewModel.selectedCategory === category.id
-                    ? styles.categoryTextActive
-                    : styles.categoryText
+                  this.viewModel.selectedSource === null
+                    ? styles.sourceTextActive
+                    : styles.sourceText
                 }
-                value={category.label}
+                value="All Sources"
+              />
+            </view>
+            
+            {/* Individual source tabs */}
+            {this.viewModel.sources.map((source) => (
+            <view
+              key={source.id}
+              style={
+                this.viewModel.selectedSource === source.id
+                  ? styles.sourcePillActive
+                  : styles.sourcePill
+              }
+              onTap={() => this.viewModel.onSourceChange(source.id)}
+            >
+              <label
+                style={
+                  this.viewModel.selectedSource === source.id
+                    ? styles.sourceTextActive
+                    : styles.sourceText
+                }
+                value={source.name}
               />
             </view>
           ))}
           </view>
         </scroll>
-        <view style={styles.searchIconButton} onTap={this.viewModel.onSearchTap}>
-          <label style={styles.searchIcon} value="🔍" />
-        </view>
       </view>
       <scroll 
         style={styles.articlesScroll}
-        onScrollEnd={() => {
-          console.log("Scrolled to end of articles list", "hasMore -> ", this.viewModel.hasMore, ", isLoadingMore -> ",this.viewModel.isLoadingMore);
-          if (this.viewModel.hasMore && !this.viewModel.isLoadingMore) {
-            this.viewModel.onLoadMore();
-          }
-        }}
       >
         {this.viewModel.articles.length === 0 ? (
           <view style={styles.emptyContainer}>
@@ -82,9 +81,9 @@ export class NewsList extends Component<ViewModel> {
                 style={styles.articleCard}
                 onTap={() => this.viewModel.onArticleTap(article)}
               >
-                {article.urlToImage && (
+                {article.imageUrl && (
                   <image 
-                    src={article.urlToImage} 
+                    src={article.imageUrl} 
                     style={styles.articleImage}
                   />
                 )}
@@ -93,20 +92,10 @@ export class NewsList extends Component<ViewModel> {
                   {article.description && (
                     <label style={styles.articleDescription} value={article.description} />
                   )}
-                  <label style={styles.articleSource} value={article.source.name} />
+                  <label style={styles.articleSource} value={article.source} />
                 </view>
               </view>
             ))}
-            {this.viewModel.isLoadingMore && (
-              <view style={styles.loadingMoreContainer}>
-                <label style={styles.loadingMoreText} value="Loading more articles..." />
-              </view>
-            )}
-            {!this.viewModel.hasMore && this.viewModel.articles.length > 0 && (
-              <view style={styles.endOfListContainer}>
-                <label style={styles.endOfListText} value="No more articles" />
-              </view>
-            )}
           </view>
         )}
       </scroll>
@@ -121,30 +110,21 @@ const styles = {
     backgroundColor: '#f5f5f5',
     flexDirection: 'column',
   }),
-  categoryHeader: new Style<View>({
+  sourceHeader: new Style<View>({
     width: '100%',
     backgroundColor: 'white',
     flexDirection: 'row',
     alignItems: 'center',
   }),
-  categoryScroll: new Style<ScrollView>({
-    width: '85%',
+  sourceScroll: new Style<ScrollView>({
+    width: '100%',
     backgroundColor: 'white',
   }),
-  searchIconButton: new Style<View>({
-    width: '15%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 12,
-  }),
-  searchIcon: new Style<Label>({
-    font: systemFont(20),
-  }),
-  categoryContainer: new Style<View>({
+  sourceContainer: new Style<View>({
     flexDirection: 'row',
     padding: 12,
   }),
-  categoryPill: new Style<View>({
+  sourcePill: new Style<View>({
     backgroundColor: '#f0f0f0',
     paddingTop: 8,
     paddingBottom: 8,
@@ -153,7 +133,7 @@ const styles = {
     borderRadius: 20,
     marginRight: 8,
   }),
-  categoryPillActive: new Style<View>({
+  sourcePillActive: new Style<View>({
     backgroundColor: '#007AFF',
     paddingTop: 8,
     paddingBottom: 8,
@@ -162,11 +142,11 @@ const styles = {
     borderRadius: 20,
     marginRight: 8,
   }),
-  categoryText: new Style<Label>({
+  sourceText: new Style<Label>({
     font: systemFont(14),
     color: '#333333',
   }),
-  categoryTextActive: new Style<Label>({
+  sourceTextActive: new Style<Label>({
     font: systemBoldFont(14),
     color: 'white',
   }),
@@ -229,24 +209,6 @@ const styles = {
   }),
   articleSource: new Style<Label>({
     font: systemFont(12),
-    color: '#999999',
-  }),
-  loadingMoreContainer: new Style<View>({
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  }),
-  loadingMoreText: new Style<Label>({
-    font: systemFont(14),
-    color: '#999999',
-  }),
-  endOfListContainer: new Style<View>({
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-  }),
-  endOfListText: new Style<Label>({
-    font: systemFont(14),
     color: '#999999',
   }),
 };

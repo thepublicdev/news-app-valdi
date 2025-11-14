@@ -3,107 +3,94 @@ import { NavigationPage } from "valdi_navigation/src/NavigationPage";
 import { Label, View } from "valdi_tsx/src/NativeTemplateElements";
 import { Style } from "valdi_core/src/Style";
 import { systemBoldFont } from "valdi_core/src/SystemFont";
-import { NewsArticle } from "../services/NewsAPIService";
+import { Article, Source } from "../services/NewsAPIService";
 import { NewsList } from "../components/NewsList";
 import { App } from "../App";
-import { SearchPage } from "./SearchPage";
 import { ArticleDetailPage } from "./ArticleDetailPage";
 import { Device } from "valdi_core/src/Device";
 
 interface State {
-  articles: NewsArticle[];
-  selectedCategory: string;
+  articles: Article[];
+  sources: Source[];
+  selectedSource: string | null;
   isLoading: boolean;
-  isLoadingMore: boolean;
+  isLoadingSources: boolean;
   error: string | null;
-  currentPage: number;
-  hasMore: boolean;
 }
 
 @NavigationPage(module)
 export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
   state: State = {
     articles: [],
-    selectedCategory: "general",
+    sources: [],
+    selectedSource: null,
     isLoading: false,
-    isLoadingMore: false,
+    isLoadingSources: false,
     error: null,
-    currentPage: 1,
-    hasMore: true,
   };
 
   onCreate(): void {
-    this.loadNews();
+    this.loadSources();
   }
 
-  private async loadNews(category?: string, reset: boolean = true) {
-    const selectedCategory = category || this.state.selectedCategory;
-    const page = reset ? 1 : this.state.currentPage;
+  private async loadSources() {
+    this.setState({ isLoadingSources: true, error: null });
+    try {
+      const sources = await App.newsService.getSources(true); // Only enabled sources
+      console.log("Loaded sources:", sources.length);
+      
+      this.setState({
+        sources,
+        selectedSource: null, // Start with "All Sources"
+        isLoadingSources: false,
+      });
+      
+      // Load all articles (no source filter)
+      await this.loadArticles();
+    } catch (error) {
+      console.error("Failed to load sources:", error);
+      this.setState({
+        error: "Failed to load sources. Please check your connection.",
+        isLoadingSources: false,
+      });
+    }
+  }
+
+  private async loadArticles(sourceId?: string) {
+    // If sourceId is explicitly passed, use it. Otherwise use state.
+    // null means "All Sources" (no filter)
+    const selectedSource = sourceId !== undefined ? sourceId : this.state.selectedSource;
 
     this.setState({ isLoading: true, error: null });
     try {
-      const articles = await App.newsService.getTopHeadlines(
-        "us",
-        selectedCategory,
-        page
+      // Pass undefined to getArticles if selectedSource is null (All Sources)
+      const articles = await App.newsService.getArticles(
+        100, 
+        selectedSource || undefined
       );
-      console.log("Loaded news articles:", {
+      console.log("Loaded articles:", {
         count: articles.length,
-        category: selectedCategory,
-        page: page,
+        source: selectedSource || "All Sources",
       });
       this.setState({
         articles,
         isLoading: false,
-        currentPage: page,
-        hasMore: articles.length >= 100,
       });
     } catch (error) {
-      console.error("Failed to load news:", error);
+      console.error("Failed to load articles:", error);
       this.setState({
-        error: "Failed to load news. Please check your API key and connection.",
+        error: "Failed to load articles. Please check your connection.",
         isLoading: false,
       });
     }
   }
 
-  private async loadMoreNews() {
-    console.log("Attempting to load more news...", this.state.currentPage);
-    if (this.state.isLoadingMore || !this.state.hasMore) {
-      return;
-    }
-
-    this.setState({ isLoadingMore: true });
-    try {
-      const nextPage = this.state.currentPage + 1;
-      const newArticles = await App.newsService.getTopHeadlines(
-        "us",
-        this.state.selectedCategory,
-        nextPage
-      );
-
-      this.setState({
-        articles: [...this.state.articles, ...newArticles],
-        currentPage: nextPage,
-        isLoadingMore: false,
-        hasMore: newArticles.length >= 20,
-      });
-    } catch (error) {
-      console.error("Failed to load more news:", error);
-      this.setState({ isLoadingMore: false });
-    }
-  }
-
-  private handleCategoryChange = async (category: string) => {
-    this.setState({ selectedCategory: category, currentPage: 1 });
-    await this.loadNews(category, true);
+  private handleSourceChange = async (sourceId: string | null) => {
+    this.setState({ selectedSource: sourceId });
+    await this.loadArticles(sourceId || undefined);
   };
 
-  private handleLoadMore = async () => {
-    await this.loadMoreNews();
-  };
-
-  private handleArticleTap = (article: NewsArticle) => {
+  private handleArticleTap = (article: Article) => {
     // Pass the webLauncher context from this page's context to the detail page
     this.navigationController.push(
       ArticleDetailPage,
@@ -112,12 +99,8 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
     );
   };
 
-  private handleSearchTap = () => {
-    this.navigationController.push(SearchPage, {}, {});
-  };
-
   private handleRefresh = async () => {
-    await this.loadNews();
+    await this.loadArticles();
   };
 
   onRender(): void {
@@ -126,10 +109,10 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
 
     console.log("Top Inset:", topInset, "Bottom Inset:", bottomInset);
 
-    if (this.state.isLoading && this.state.articles.length === 0) {
+    if (this.state.isLoadingSources || (this.state.isLoading && this.state.articles.length === 0)) {
       <view style={styles.container}>
         <view style={styles.loadingContainer}>
-          <label style={styles.loadingText} value="Loading news..." />
+          <label style={styles.loadingText} value="Loading..." />
         </view>
       </view>;
       return;
@@ -148,9 +131,9 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
     }
 
     console.log("Rendering NewsList with articles:", {
-      hasMore: this.state.hasMore,
-      isLoadingMore: this.state.isLoadingMore,
       articleCount: this.state.articles.length,
+      sourcesCount: this.state.sources.length,
+      selectedSource: this.state.selectedSource,
     });
 
     <view
@@ -160,14 +143,11 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
     >
       <NewsList
         articles={this.state.articles}
-        selectedCategory={this.state.selectedCategory}
+        sources={this.state.sources}
+        selectedSource={this.state.selectedSource}
         onArticleTap={this.handleArticleTap}
-        onCategoryChange={this.handleCategoryChange}
+        onSourceChange={this.handleSourceChange}
         onRefresh={this.handleRefresh}
-        onSearchTap={this.handleSearchTap}
-        onLoadMore={this.handleLoadMore}
-        isLoadingMore={this.state.isLoadingMore}
-        hasMore={this.state.hasMore}
       />
     </view>;
   }
