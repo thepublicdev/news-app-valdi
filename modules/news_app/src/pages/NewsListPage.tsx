@@ -74,7 +74,7 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
     try {
       // Pass undefined to getArticles if selectedSource is null (All Sources)
       const response = await App.newsService.getArticles(
-        50, 
+        10, 
         selectedSource || undefined,
         page
       );
@@ -111,7 +111,7 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
 
     try {
       const response = await App.newsService.getArticles(
-        50,
+        10,
         this.state.selectedSource || undefined,
         nextPage
       );

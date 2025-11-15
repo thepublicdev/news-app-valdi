@@ -68,6 +68,12 @@ export class NewsList extends Component<ViewModel> {
       </view>
       <scroll 
         style={styles.articlesScroll}
+        onScrollEnd={() => {
+          console.log("Scrolled to end", "hasNextPage ->", this.viewModel.hasNextPage, "isLoadingMore ->", this.viewModel.isLoadingMore);
+          if (this.viewModel.hasNextPage && !this.viewModel.isLoadingMore) {
+            this.viewModel.onLoadMore();
+          }
+        }}
       >
         {this.viewModel.articles.length === 0 ? (
           <view style={styles.emptyContainer}>
@@ -100,19 +106,17 @@ export class NewsList extends Component<ViewModel> {
               </view>
             ))}
             
-            {/* Load More button */}
-            {this.viewModel.hasNextPage && !this.viewModel.isLoadingMore && (
-              <view style={styles.loadMoreContainer}>
-                <view style={styles.loadMoreButton} onTap={this.viewModel.onLoadMore}>
-                  <label style={styles.loadMoreButtonText} value="Load More" />
-                </view>
-              </view>
-            )}
-            
             {/* Loading indicator */}
             {this.viewModel.isLoadingMore && (
               <view style={styles.loadingMoreContainer}>
                 <label style={styles.loadingMoreText} value="Loading more articles..." />
+              </view>
+            )}
+            
+            {/* End of list indicator */}
+            {!this.viewModel.hasNextPage && this.viewModel.articles.length > 0 && (
+              <view style={styles.endOfListContainer}>
+                <label style={styles.endOfListText} value="No more articles" />
               </view>
             )}
           </view>
@@ -230,30 +234,21 @@ const styles = {
     font: systemFont(12),
     color: '#999999',
   }),
-  loadMoreContainer: new Style<View>({
-    padding: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  }),
-  loadMoreButton: new Style<View>({
-    backgroundColor: '#007AFF',
-    paddingTop: 12,
-    paddingBottom: 12,
-    paddingLeft: 24,
-    paddingRight: 24,
-    borderRadius: 8,
-  }),
-  loadMoreButtonText: new Style<Label>({
-    font: systemBoldFont(16),
-    color: 'white',
-  }),
   loadingMoreContainer: new Style<View>({
     padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
   }),
   loadingMoreText: new Style<Label>({
+    font: systemFont(14),
+    color: '#999999',
+  }),
+  endOfListContainer: new Style<View>({
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  }),
+  endOfListText: new Style<Label>({
     font: systemFont(14),
     color: '#999999',
   }),

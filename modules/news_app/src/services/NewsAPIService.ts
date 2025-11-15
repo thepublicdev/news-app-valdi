@@ -130,7 +130,7 @@ export class NewsAPIService {
   }
 
   async getArticles(
-    limit: number = 50, 
+    limit: number = 10, 
     source?: string, 
     page: number = 1,
     type?: string, 
