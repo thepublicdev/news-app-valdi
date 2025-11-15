@@ -120,7 +120,7 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
         count: response.articles.length,
         page: nextPage,
         hasNextPage: response.pagination?.hasNextPage || false,
-      });
+      }); 
 
       this.setState({
         articles: [...this.state.articles, ...response.articles],
