@@ -15,7 +15,11 @@ interface State {
   selectedSource: string | null;
   isLoading: boolean;
   isLoadingSources: boolean;
+  isLoadingMore: boolean;
   error: string | null;
+  currentPage: number;
+  hasNextPage: boolean;
+  totalPages: number;
 }
 
 @NavigationPage(module)
@@ -26,7 +30,11 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
     selectedSource: null,
     isLoading: false,
     isLoadingSources: false,
+    isLoadingMore: false,
     error: null,
+    currentPage: 1,
+    hasNextPage: false,
+    totalPages: 0,
   };
 
   onCreate(): void {
@@ -56,25 +64,33 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
     }
   }
 
-  private async loadArticles(sourceId?: string) {
+  private async loadArticles(sourceId?: string, reset: boolean = true) {
     // If sourceId is explicitly passed, use it. Otherwise use state.
     // null means "All Sources" (no filter)
     const selectedSource = sourceId !== undefined ? sourceId : this.state.selectedSource;
+    const page = reset ? 1 : this.state.currentPage;
 
     this.setState({ isLoading: true, error: null });
     try {
       // Pass undefined to getArticles if selectedSource is null (All Sources)
-      const articles = await App.newsService.getArticles(
-        100, 
-        selectedSource || undefined
+      const response = await App.newsService.getArticles(
+        50, 
+        selectedSource || undefined,
+        page
       );
-      console.log("Loaded articles:", {
-        count: articles.length,
+
+      console.log("Loaded articles: ", {
+        count: response.articles.length,
         source: selectedSource || "All Sources",
+        page: page,
+        hasNextPage: response.pagination?.hasNextPage || false,
       });
       this.setState({
-        articles,
+        articles: response.articles,
         isLoading: false,
+        currentPage: page,
+        hasNextPage: response.pagination?.hasNextPage || false,
+        totalPages: response.pagination?.totalPages || 0,
       });
     } catch (error) {
       console.error("Failed to load articles:", error);
@@ -85,9 +101,43 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
     }
   }
 
+  private async loadMoreArticles() {
+    if (this.state.isLoadingMore || !this.state.hasNextPage) {
+      return;
+    }
+
+    const nextPage = this.state.currentPage + 1;
+    this.setState({ isLoadingMore: true });
+
+    try {
+      const response = await App.newsService.getArticles(
+        50,
+        this.state.selectedSource || undefined,
+        nextPage
+      );
+
+      console.log("Loaded more articles:", {
+        count: response.articles.length,
+        page: nextPage,
+        hasNextPage: response.pagination?.hasNextPage || false,
+      });
+
+      this.setState({
+        articles: [...this.state.articles, ...response.articles],
+        currentPage: nextPage,
+        hasNextPage: response.pagination?.hasNextPage || false,
+        totalPages: response.pagination?.totalPages || 0,
+        isLoadingMore: false,
+      });
+    } catch (error) {
+      console.error("Failed to load more articles:", error);
+      this.setState({ isLoadingMore: false });
+    }
+  }
+
   private handleSourceChange = async (sourceId: string | null) => {
-    this.setState({ selectedSource: sourceId });
-    await this.loadArticles(sourceId || undefined);
+    this.setState({ selectedSource: sourceId, currentPage: 1 });
+    await this.loadArticles(sourceId || undefined, true);
   };
 
   private handleArticleTap = (article: Article) => {
@@ -99,8 +149,12 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
     );
   };
 
+  private handleLoadMore = async () => {
+    await this.loadMoreArticles();
+  };
+
   private handleRefresh = async () => {
-    await this.loadArticles();
+    await this.loadArticles(undefined, true);
   };
 
   onRender(): void {
@@ -134,6 +188,8 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
       articleCount: this.state.articles.length,
       sourcesCount: this.state.sources.length,
       selectedSource: this.state.selectedSource,
+      currentPage: this.state.currentPage,
+      hasNextPage: this.state.hasNextPage,
     });
 
     <view
@@ -148,6 +204,9 @@ export class NewsListPage extends NavigationPageStatefulComponent<{}, any> {
         onArticleTap={this.handleArticleTap}
         onSourceChange={this.handleSourceChange}
         onRefresh={this.handleRefresh}
+        onLoadMore={this.handleLoadMore}
+        hasNextPage={this.state.hasNextPage}
+        isLoadingMore={this.state.isLoadingMore}
       />
     </view>;
   }

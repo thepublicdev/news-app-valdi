@@ -25,9 +25,19 @@ export interface Source {
   metadata?: Record<string, any>;
 }
 
+export interface PaginationMetadata {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
 export interface ArticlesResponse {
   success: boolean;
   count: number;
+  pagination?: PaginationMetadata;
   articles: Article[];
   stats?: {
     bySource: Record<string, number>;
@@ -119,9 +129,16 @@ export class NewsAPIService {
     }
   }
 
-  async getArticles(limit: number = 50, source?: string, type?: string, startDate?: string, endDate?: string): Promise<Article[]> {
+  async getArticles(
+    limit: number = 50, 
+    source?: string, 
+    page: number = 1,
+    type?: string, 
+    startDate?: string, 
+    endDate?: string
+  ): Promise<ArticlesResponse> {
     try {
-      let path = `/api/articles?limit=${limit}`;
+      let path = `/api/articles?limit=${limit}&page=${page}`;
       
       if (source) {
         path += `&source=${source}`;
@@ -153,7 +170,7 @@ export class NewsAPIService {
         throw new Error('API returned error status');
       }
 
-      return data.articles;
+      return data;
     } catch (error) {
       console.error('Failed to fetch articles:', error);
       throw error;
