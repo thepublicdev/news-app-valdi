@@ -1,7 +1,4 @@
 import { Component } from 'valdi_core/src/Component';
-import { Label, View } from 'valdi_tsx/src/NativeTemplateElements';
-import { Style } from 'valdi_core/src/Style';
-import { systemBoldFont } from 'valdi_core/src/SystemFont';
 import { NavigationRoot } from 'valdi_navigation/src/NavigationRoot';
 import { NavigationController } from 'valdi_navigation/src/NavigationController';
 import { $slot } from 'valdi_core/src/CompilerIntrinsics';
@@ -45,20 +42,3 @@ export class App extends Component<AppViewModel, AppComponentContext> {
     </NavigationRoot>;
   }
 }
-
-const styles = {
-  container: new Style<View>({
-    width: '100%',
-    height: '100%',
-    backgroundColor: '#007AFF',
-    flexDirection: 'column',
-  }),
-  header: new Style<View>({
-    padding: 16,
-    alignItems: 'center',
-  }),
-  headerTitle: new Style<Label>({
-    font: systemBoldFont(20),
-    color: 'white',
-  }),
-};

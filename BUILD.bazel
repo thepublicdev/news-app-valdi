@@ -5,6 +5,7 @@ valdi_application(
     name = "dev_news",
     ios_bundle_id = "com.vanks.devnews",
     android_package = "com.vanks.devnews",
+    android_app_manifest = "AndroidManifest.xml",
     ios_families = ["iphone"],
     root_component_path = "App@news_app/src/App",
     title = "Dev News",
