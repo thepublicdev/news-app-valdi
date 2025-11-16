@@ -2,7 +2,7 @@ load("@valdi//bzl/valdi:valdi_application.bzl", "valdi_application")
 load("@valdi//bzl/valdi:valdi_exported_library.bzl", "valdi_exported_library")
 
 valdi_application(
-    name = "news_app_app",
+    name = "dev_news",
     ios_bundle_id = "com.vanks.devnews",
     android_package = "com.vanks.devnews",
     ios_families = ["iphone"],
@@ -20,7 +20,7 @@ valdi_application(
 
 valdi_exported_library(
     name = "news_app_export",
-    ios_bundle_id = "com.website.news_app.lib",
-    ios_bundle_name = "NewsApp",
+    ios_bundle_id = "com.vanks.devnews.lib",
+    ios_bundle_name = "Dev News",
     deps = ["//modules/news_app"],
 )

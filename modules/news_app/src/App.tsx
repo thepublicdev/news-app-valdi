@@ -27,25 +27,20 @@ export interface AppComponentContext {
  */
 export class App extends Component<AppViewModel, AppComponentContext> {
   public static newsService: NewsAPIService = new NewsAPIService();
-  private navigationController?: NavigationController;
-
-  onCreate(): void {
-    // Push the initial page after a small delay to ensure NavigationController is ready
-    setTimeout(() => {
-      // Pass the webLauncher context to the NewsListPage
-      this.navigationController?.push(NewsListPage, {}, this.context);
-    }, 0);
-  }
 
   onRender(): void {
     <NavigationRoot>
       {$slot((navigationController: NavigationController) => {
-        this.navigationController = navigationController;
-        <view style={styles.container}>
-          <view style={styles.header}>
-            <label style={styles.headerTitle} value="News App" />
-          </view>
-        </view>;
+        // Access the internal navigator from the controller
+        const navigator = (navigationController as any).navigator;
+        
+        // Create the context with navigator
+        const pageContext = {
+          navigator: navigator,
+        };
+        
+        // Render NewsListPage directly as the root
+        <NewsListPage context={pageContext} />;
       })}
     </NavigationRoot>;
   }
