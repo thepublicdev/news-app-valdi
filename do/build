@@ -1,0 +1,1 @@
+valdi package android --build_config release --output_path bazel-bin/dev_news.apk
