@@ -11,6 +11,7 @@ export interface Article {
   publishedAt: string;
   author?: string | null;
   description?: string | null;
+  summary?: string | null;
   imageUrl?: string | null;
   fetchedAt: string;
 }
@@ -192,5 +193,52 @@ export class NewsAPIService {
       publishedAt: article.publishedAt,
       content: null,
     };
+  }
+
+  async getArticleSummary(articleId: string): Promise<{ summary: string | null; hasSummary: boolean }> {
+    try {
+      const path = `/api/articles/${articleId}/summary`;
+      const headers = {
+        'User-Agent': 'NewsApp/1.0'
+      };
+
+      const response: HTTPResponse = await this.httpClient.get(path, headers);
+
+      if (response.statusCode !== 200) {
+        throw new Error(`HTTP ${response.statusCode}: Failed to fetch article summary`);
+      }
+
+      const text = new TextDecoder().decode(response.body);
+      const data: { summary: string | null; hasSummary: boolean } = JSON.parse(text);
+
+      return data;
+    } catch (error) {
+      console.error('Failed to fetch article summary:', error);
+      throw error;
+    }
+  }
+
+  async generateArticleSummary(articleId: string): Promise<{ summary: string; cached: boolean }> {
+    try {
+      const path = `/api/articles/${articleId}/summary`;
+      const headers = {
+        'User-Agent': 'NewsApp/1.0',
+        'Content-Type': 'application/json'
+      };
+
+      const response: HTTPResponse = await this.httpClient.post(path, new Uint8Array(), headers);
+
+      if (response.statusCode !== 200) {
+        throw new Error(`HTTP ${response.statusCode}: Failed to generate article summary`);
+      }
+
+      const text = new TextDecoder().decode(response.body);
+      const data: { summary: string; cached: boolean } = JSON.parse(text);
+
+      return data;
+    } catch (error) {
+      console.error('Failed to generate article summary:', error);
+      throw error;
+    }
   }
 }
